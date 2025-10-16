@@ -58,6 +58,97 @@ export class GenerationService {
     };
   }
 
+  /**
+   * Accepts a generation and creates a recipe atomically
+   * @param generationId UUID of the generation to accept
+   * @param recipeData Recipe data (title and content) to save
+   * @returns Promise with the created recipe ID
+   * @throws Error with specific codes for 404/409/500 scenarios
+   */
+  async acceptGeneration(
+    generationId: string,
+    recipeData: { title: string; content: string }
+  ): Promise<{ recipe_id: string }> {
+    try {
+      const { data, error } = await this.supabase.rpc("accept_generation", {
+        p_user_id: DEFAULT_USER_ID,
+        p_generation_id: generationId,
+        p_title: recipeData.title,
+        p_content: recipeData.content,
+      });
+
+      if (error) {
+        // Map PostgreSQL error codes to HTTP status codes
+        if (error.code === "02000") {
+          // No data found - generation not found or not owned
+          throw new Error("GENERATION_NOT_FOUND");
+        }
+        if (error.code === "23505") {
+          // Unique violation - generation already processed
+          throw new Error("GENERATION_ALREADY_PROCESSED");
+        }
+        // Other database errors
+        console.error("Accept generation RPC error:", error);
+        throw new Error("DATABASE_ERROR");
+      }
+
+      if (!data) {
+        throw new Error("DATABASE_ERROR");
+      }
+
+      return { recipe_id: data };
+    } catch (error) {
+      // Re-throw known errors, wrap unknown ones
+      if (
+        error instanceof Error &&
+        ["GENERATION_NOT_FOUND", "GENERATION_ALREADY_PROCESSED", "DATABASE_ERROR"].includes(error.message)
+      ) {
+        throw error;
+      }
+      console.error("Unexpected error in acceptGeneration:", error);
+      throw new Error("DATABASE_ERROR");
+    }
+  }
+
+  /**
+   * Rejects a generation by updating its status
+   * @param generationId UUID of the generation to reject
+   * @throws Error with specific codes for 404/409/500 scenarios
+   */
+  async rejectGeneration(generationId: string): Promise<void> {
+    try {
+      const { error } = await this.supabase.rpc("reject_generation", {
+        p_user_id: DEFAULT_USER_ID,
+        p_generation_id: generationId,
+      });
+
+      if (error) {
+        // Map PostgreSQL error codes to HTTP status codes
+        if (error.code === "02000") {
+          // No data found - generation not found or not owned
+          throw new Error("GENERATION_NOT_FOUND");
+        }
+        if (error.code === "23505") {
+          // Unique violation - generation already processed
+          throw new Error("GENERATION_ALREADY_PROCESSED");
+        }
+        // Other database errors
+        console.error("Reject generation RPC error:", error);
+        throw new Error("DATABASE_ERROR");
+      }
+    } catch (error) {
+      // Re-throw known errors, wrap unknown ones
+      if (
+        error instanceof Error &&
+        ["GENERATION_NOT_FOUND", "GENERATION_ALREADY_PROCESSED", "DATABASE_ERROR"].includes(error.message)
+      ) {
+        throw error;
+      }
+      console.error("Unexpected error in rejectGeneration:", error);
+      throw new Error("DATABASE_ERROR");
+    }
+  }
+
   private static sha256Hex(value: string): string {
     return createHash("sha256").update(value, "utf8").digest("hex");
   }
