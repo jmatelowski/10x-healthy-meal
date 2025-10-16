@@ -11,3 +11,15 @@ export const zCreateRecipeSchema = z.object({
 });
 
 export type CreateRecipeDTO = z.infer<typeof zCreateRecipeSchema>;
+
+/**
+ * Zod schema for recipe draft validation (client-side)
+ * - mirrors backend constraints
+ * - used for real-time validation in forms
+ */
+export const zRecipeDraft = z.object({
+  title: z.string().min(1, "Title is required").max(50, "Title must be ≤ 50 characters"),
+  content: z.string().min(1, "Content is required").max(10_000, "Content must be ≤ 10 000 characters"),
+});
+
+export type RecipeDraft = z.infer<typeof zRecipeDraft>;

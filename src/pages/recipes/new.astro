@@ -1,0 +1,19 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import RecipeCreateForm from "@/components/forms/RecipeCreateForm";
+---
+
+<Layout title="Create New Recipe">
+  <main class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight">Create New Recipe</h1>
+      <p class="text-muted-foreground mt-2">
+        Create a new recipe manually or use AI to adapt it to your dietary preferences.
+      </p>
+    </div>
+
+    <div id="recipe-create-form-root">
+      <RecipeCreateForm client:load />
+    </div>
+  </main>
+</Layout>
