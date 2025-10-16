@@ -121,7 +121,6 @@ The Recipe Create view enables users to create a new recipe manually or send the
     - `open: boolean`
     - `generationId: string | null`
     - `proposal: RecipeBase | null`
-    - `status: "idle" | "polling" | "timeout" | "error"`
     - `errorMessage?: string`
 
 ## 6. State Management

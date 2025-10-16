@@ -39,6 +39,12 @@ export type RecipeRow = Tables<"recipes">;
 
 export type RecipeSource = "manual" | "ai";
 
+// Base recipe type for UI components
+export interface RecipeBase {
+  title: string;
+  content: string;
+}
+
 export interface RecipeDto {
   id: RecipeRow["id"];
   title: RecipeRow["title"];
@@ -137,4 +143,36 @@ export type GenerationErrorLogDto = GenerationErrorLogRow;
 export interface GenerationErrorLogListResponseDto {
   data: GenerationErrorLogDto[];
   pagination: PaginationMetaDto;
+}
+
+// ------------------------------------
+// View Model Types for Recipe Create
+// ------------------------------------
+
+/**
+ * View model for recipe draft form state
+ */
+export interface RecipeDraftViewModel {
+  title: string;
+  content: string;
+  errors: {
+    title?: string[];
+    content?: string[];
+  };
+  touched: {
+    title: boolean;
+    content: boolean;
+  };
+  isValid: boolean;
+  isSubmitting: boolean;
+}
+
+/**
+ * State for AI Review modal
+ */
+export interface AiReviewState {
+  open: boolean;
+  generationId: string | null;
+  proposal: RecipeBase | null;
+  errorMessage?: string;
 }
