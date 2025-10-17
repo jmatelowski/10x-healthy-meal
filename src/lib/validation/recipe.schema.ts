@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { RecipeSortField, SortDirection } from "@/types";
 
 /**
  * Zod schema for POST /recipes payload
@@ -23,3 +24,33 @@ export const zRecipeDraft = z.object({
 });
 
 export type RecipeDraft = z.infer<typeof zRecipeDraft>;
+
+// Valid sort fields and directions for validation
+const VALID_SORT_FIELDS: RecipeSortField[] = ["updated_at", "created_at", "title"];
+const VALID_SORT_DIRECTIONS: SortDirection[] = ["asc", "desc"];
+
+/**
+ * Zod schema for GET /recipes query parameters
+ * - validates pagination and sorting parameters
+ * - enforces safe defaults and limits
+ */
+export const zRecipesQueryParams = z.object({
+  page: z.coerce.number().int().min(1, "Page must be ≥ 1").default(1),
+  page_size: z.coerce.number().int().min(1, "Page size must be ≥ 1").max(100, "Page size must be ≤ 100").default(20),
+  sort: z
+    .string()
+    .regex(
+      /^(updated_at|created_at|title)\s+(asc|desc)$/,
+      "Sort must be '<field> <direction>' where field is updated_at|created_at|title and direction is asc|desc"
+    )
+    .default("updated_at desc")
+    .refine((value) => {
+      const [field, direction] = value.split(" ");
+      return (
+        VALID_SORT_FIELDS.includes(field as RecipeSortField) &&
+        VALID_SORT_DIRECTIONS.includes(direction as SortDirection)
+      );
+    }, "Invalid sort field or direction"),
+});
+
+export type RecipesQueryParamsDTO = z.infer<typeof zRecipesQueryParams>;

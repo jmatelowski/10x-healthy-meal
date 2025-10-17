@@ -62,10 +62,23 @@ export interface RecipeListResponseDto {
   pagination: PaginationMetaDto;
 }
 
+// Sort field options for recipes
+export type RecipeSortField = "updated_at" | "created_at" | "title";
+export type SortDirection = "asc" | "desc";
+
 export interface RecipesQueryParams {
   page?: number;
   page_size?: number;
   sort?: string; // e.g. "updated_at desc"
+}
+
+// Service layer parameters for listing recipes
+export interface ListRecipesParams {
+  userId: string;
+  page?: number;
+  pageSize?: number;
+  sortField?: RecipeSortField;
+  sortDir?: SortDirection;
 }
 
 export interface CreateRecipeCommand {
