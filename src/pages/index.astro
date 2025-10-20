@@ -1,8 +1,10 @@
 ---
-import Welcome from "../components/Welcome.astro";
-import Layout from "../layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro";
+import RecipesListIsland from "@/components/recipes/RecipesListIsland";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="Recipes">
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <RecipesListIsland client:load />
+  </main>
 </Layout>

@@ -1,25 +1,10 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import RecipesListIsland from "@/components/recipes/RecipesListIsland";
 ---
 
 <Layout title="Recipes">
   <main class="container mx-auto px-4 py-8 max-w-4xl">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold tracking-tight">Your Recipes</h1>
-      <p class="text-muted-foreground mt-2">Manage your saved recipes and create new ones.</p>
-    </div>
-
-    <div class="mb-6">
-      <a
-        href="/recipes/new"
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-9 px-4 py-2"
-      >
-        Create New Recipe
-      </a>
-    </div>
-
-    <div class="text-center py-12">
-      <p class="text-muted-foreground">No recipes yet. Create your first recipe to get started!</p>
-    </div>
+    <RecipesListIsland client:load />
   </main>
 </Layout>
