@@ -42,7 +42,7 @@
 
 ### Recipes List
 
-- View path: `/recipes`
+- View path: `/` and `/recipes`
 - Main purpose: Primary landing after login; browse user recipes with pagination.
 - Key information to display:
   - Recipe cards (title, updated date, content preview - up to 100 characters, elliped), AI badge when `source = 'ai'`, Add Recipe CTA, pagination controls, empty-state with CTA.
