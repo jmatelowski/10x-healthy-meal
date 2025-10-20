@@ -7,10 +7,7 @@ interface Props {
 }
 
 const { title = "HealthyMeal" } = Astro.props;
-
-// TODO: Get user from middleware locals
-// const user = Astro.locals.user;
-const user = null; // Placeholder until middleware is implemented
+const user = Astro.locals.user;
 ---
 
 <!doctype html>

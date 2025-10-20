@@ -1,15 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import RecipesListIsland from "@/components/recipes/RecipesListIsland";
-
-// TODO: Get user from middleware locals
-// const user = Astro.locals.user;
-const user = null; // Placeholder until middleware is implemented
-
-// Redirect to login if no user
-if (!user) {
-  return Astro.redirect("/auth/login");
-}
 ---
 
 <Layout title="HealthyMeal - Adapt Recipes to Your Dietary Needs">

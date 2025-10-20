@@ -3,25 +3,12 @@ import { FormField } from "@/components/common/FormField";
 import { FormErrorAlert } from "@/components/common/FormErrorAlert";
 import { SubmitButton } from "@/components/common/SubmitButton";
 import { loginUser } from "@/lib/api/auth";
-import { z } from "zod";
-
-// Simple validation schema - only required fields
-const loginSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
 
 interface LoginFormState {
   email: string;
   password: string;
   errors: {
-    email?: string[];
-    password?: string[];
     form?: string[];
-  };
-  touched: {
-    email: boolean;
-    password: boolean;
   };
   isSubmitting: boolean;
 }
@@ -31,93 +18,27 @@ export default function LoginForm() {
     email: "",
     password: "",
     errors: {},
-    touched: {
-      email: false,
-      password: false,
-    },
     isSubmitting: false,
   });
 
-  // Update form state with validation
-  const updateFormState = (updates: Partial<LoginFormState>) => {
-    setFormState((prev) => {
-      const newState = { ...prev, ...updates };
-
-      // Only validate touched fields
-      const errors: { email?: string[]; password?: string[]; form?: string[] } = {
-        ...newState.errors,
-      };
-
-      // Validate individual fields if they are touched
-      if (newState.touched.email) {
-        const emailResult = loginSchema.shape.email.safeParse(newState.email);
-        if (!emailResult.success) {
-          errors.email = emailResult.error.issues.map((issue) => issue.message);
-        } else {
-          errors.email = undefined;
-        }
-      }
-
-      if (newState.touched.password) {
-        const passwordResult = loginSchema.shape.password.safeParse(newState.password);
-        if (!passwordResult.success) {
-          errors.password = passwordResult.error.issues.map((issue) => issue.message);
-        } else {
-          errors.password = undefined;
-        }
-      }
-
-      return {
-        ...newState,
-        errors,
-      };
-    });
-  };
-
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
+    setFormState((prev) => ({
+      ...prev,
       email: e.target.value,
-      touched: {
-        ...formState.touched,
-        email: true,
-      },
-    });
+    }));
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
+    setFormState((prev) => ({
+      ...prev,
       password: e.target.value,
-      touched: {
-        ...formState.touched,
-        password: true,
-      },
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Mark all fields as touched
-    const touchedState = {
-      email: true,
-      password: true,
-    };
-
-    updateFormState({
-      touched: touchedState,
-    });
-
-    // Validate the entire form
-    const result = loginSchema.safeParse({
-      email: formState.email,
-      password: formState.password,
-    });
-
-    if (!result.success) {
-      return;
-    }
-
-    updateFormState({ isSubmitting: true, errors: {} });
+    setFormState((prev) => ({ ...prev, isSubmitting: true, errors: {} }));
 
     try {
       await loginUser({
@@ -125,26 +46,32 @@ export default function LoginForm() {
         password: formState.password,
       });
 
-      // Redirect to home page on success
-      window.location.href = "/";
+      // Redirect to target page (from query param) or home page on success
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get("redirect") || "/";
+
+      // Prevent redirect loop: don't redirect back to auth pages
+      // if (redirectTo.startsWith("/auth/")) {
+      //   redirectTo = "/";
+      // }
+
+      window.location.href = redirectTo;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";
 
-      updateFormState({
+      setFormState((prev) => ({
+        ...prev,
         isSubmitting: false,
         errors: {
           form: [errorMessage],
         },
-      });
+      }));
     }
   };
 
-  // Check if form is valid for enabling submit button
-  const isFormValid = loginSchema.safeParse({
-    email: formState.email,
-    password: formState.password,
-  }).success;
+  // Check if form has content for enabling submit button
+  const isFormValid = formState.email.trim().length > 0 && formState.password.length > 0;
 
   return (
     <div className="max-w-md mx-auto">
@@ -157,7 +84,6 @@ export default function LoginForm() {
           value={formState.email}
           onChange={handleEmailChange}
           placeholder="Enter your email..."
-          errors={formState.errors.email}
           disabled={formState.isSubmitting}
           autoComplete="email"
           required
@@ -169,7 +95,6 @@ export default function LoginForm() {
           value={formState.password}
           onChange={handlePasswordChange}
           placeholder="Enter your password..."
-          errors={formState.errors.password}
           disabled={formState.isSubmitting}
           autoComplete="current-password"
           required

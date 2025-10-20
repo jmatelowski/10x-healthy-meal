@@ -2,11 +2,18 @@ import type { APIRoute } from "astro";
 import type { RecipeCreationResponseDto, RecipeListResponseDto, RecipeSortField, SortDirection } from "@/types";
 import { zCreateRecipeSchema, zRecipesQueryParams } from "@/lib/validation/recipe.schema";
 import { RecipesService } from "@/lib/services/recipes.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Check authentication
+  if (!locals.user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const recipesService = new RecipesService(locals.supabase);
 
   // ----- Validation -----
@@ -45,6 +52,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 };
 
 export const GET: APIRoute = async ({ url, locals }) => {
+  // Check authentication
+  if (!locals.user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const recipesService = new RecipesService(locals.supabase);
 
   // ----- Parse and validate query parameters -----
@@ -69,9 +84,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
   // Parse sort parameter
   const [sortField, sortDir] = sort.split(" ") as [RecipeSortField, SortDirection];
 
-  // ----- Get user ID (placeholder for now) -----
-  // TODO: Replace with actual user authentication when auth is implemented
-  const userId = DEFAULT_USER_ID;
+  // Get authenticated user ID
+  const userId = locals.user.id;
 
   // ----- Service call -----
   try {

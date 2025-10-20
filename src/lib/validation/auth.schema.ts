@@ -11,10 +11,10 @@ export const zPassword = z
   .regex(/[a-zA-Z]/, "Password must contain at least one letter.")
   .regex(/\d/, "Password must contain at least one digit.");
 
-// Login command schema
+// Login command schema - minimal validation for existing credentials
 export const zLoginCommand = z.object({
-  email: zEmail,
-  password: zPassword,
+  email: z.string().min(1, "Email is required."),
+  password: z.string().min(1, "Password is required."),
 });
 
 // Register command schema
