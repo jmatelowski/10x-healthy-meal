@@ -58,7 +58,6 @@ export default function RecipeCreateForm() {
       const errors: { title?: string[]; content?: string[] } = {};
       result.error.issues.forEach((issue) => {
         const field = issue.path[0] as "title" | "content";
-        console.log({ field, issue });
         // Show required errors only if field is touched
         if (!newState.touched[field]) {
           return;

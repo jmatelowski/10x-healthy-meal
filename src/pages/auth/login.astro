@@ -1,0 +1,29 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import LoginForm from "@/components/forms/LoginForm";
+
+// TODO: Add SSR check for existing user session
+// If user is already logged in, redirect to target page or home
+// const user = Astro.locals.user;
+// if (user) {
+//   const redirect = Astro.url.searchParams.get("redirect") || "/";
+//   return Astro.redirect(redirect);
+// }
+
+const title = "Sign In - HealthyMeal";
+---
+
+<Layout title={title}>
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold tracking-tight">Sign In</h1>
+        <p class="text-muted-foreground mt-2">
+          Welcome back! Please sign in to your account.
+        </p>
+      </div>
+      
+      <LoginForm client:load />
+    </div>
+  </main>
+</Layout>
