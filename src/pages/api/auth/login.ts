@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // Map Supabase errors to user-friendly messages
       return new Response(
         JSON.stringify({
-          error: "invalid_credentials",
+          error: "Invalid email or password.",
         }),
         {
           status: 401,

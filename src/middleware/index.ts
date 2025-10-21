@@ -1,6 +1,52 @@
 import { defineMiddleware } from "astro:middleware";
+import type { APIContext, MiddlewareNext } from "astro";
 
 import { createSupabaseServerInstance } from "../db/supabase.client";
+
+const apiMiddleware = async (context: APIContext, next: MiddlewareNext) => {
+  const pathname = context.url.pathname;
+  const user = context.locals.user;
+
+  // Public API routes that don't require authentication
+  const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout"];
+
+  // Skip authentication check for public API routes
+  if (publicApiRoutes.includes(pathname)) {
+    return next();
+  }
+
+  // All other API routes require authentication
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  return next();
+};
+
+const pageMiddleware = async (context: APIContext, next: MiddlewareNext) => {
+  const pathname = context.url.pathname;
+  const user = context.locals.user;
+
+  const publicRoutes = ["/auth/login", "/auth/register", "/auth/reset-password", "/auth/update-password"];
+
+  if (publicRoutes.includes(pathname)) {
+    if (user) {
+      const redirect = context.url.searchParams.get("redirect") || "/";
+      return context.redirect(redirect);
+    }
+    return next();
+  }
+
+  if (!user) {
+    const redirectUrl = `/auth/login?redirect=${encodeURIComponent(pathname)}`;
+    return context.redirect(redirectUrl);
+  }
+
+  return next();
+};
 
 export const onRequest = defineMiddleware(async (context, next) => {
   // Create SSR-compatible Supabase client with cookie management
@@ -19,28 +65,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const pathname = context.url.pathname;
 
-  // Skip middleware logic for API routes - they handle auth individually
   if (pathname.startsWith("/api/")) {
-    return next();
+    return apiMiddleware(context, next);
+  } else {
+    return pageMiddleware(context, next);
   }
-
-  // Define public routes that don't require authentication (whitelist approach)
-  const publicRoutes = ["/auth/login", "/auth/register", "/auth/reset-password", "/auth/update-password"];
-
-  // Handle public routes - redirect if already logged in
-  if (publicRoutes.includes(pathname)) {
-    if (user) {
-      const redirect = context.url.searchParams.get("redirect") || "/";
-      return context.redirect(redirect);
-    }
-    return next();
-  }
-
-  // All other routes are protected by default - redirect if not logged in
-  if (!user) {
-    const redirectUrl = `/auth/login?redirect=${encodeURIComponent(pathname)}`;
-    return context.redirect(redirectUrl);
-  }
-
-  return next();
 });

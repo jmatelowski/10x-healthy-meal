@@ -14,8 +14,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
 export type SupabaseClient = typeof supabaseClient;
 
-export const DEFAULT_USER_ID = "5ed387b6-b2e9-4ae3-84ee-14279676c2bb";
-
 // Cookie options for SSR authentication
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",

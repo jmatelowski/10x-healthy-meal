@@ -22,8 +22,8 @@ export async function loginUser({ email, password }: LoginParams): Promise<AuthR
     const errorData = await response.json().catch(() => ({}));
 
     let errorMessage = "A server error occurred. Please try again.";
-    if (response.status === 401 && errorData.error === "invalid_credentials") {
-      errorMessage = "Invalid email or password.";
+    if (response.status === 401 && errorData.error) {
+      errorMessage = errorData.error;
     }
 
     throw new Error(errorMessage);
@@ -48,8 +48,8 @@ export async function registerUser({ email, password }: RegisterParams): Promise
     const errorData = await response.json().catch(() => ({}));
 
     let errorMessage = "A server error occurred. Please try again.";
-    if (response.status === 409 && errorData.error === "email_in_use") {
-      errorMessage = "Account already exists.";
+    if (errorData.error) {
+      errorMessage = errorData.error;
     }
 
     throw new Error(errorMessage);

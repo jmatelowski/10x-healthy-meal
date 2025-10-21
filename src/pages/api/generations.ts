@@ -6,6 +6,11 @@ import { zCreateGeneration } from "@/lib/validation/generation.schema";
 import { GenerationService } from "@/lib/services/generation.service";
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // User is guaranteed to exist due to middleware auth check
+  if (!locals.user) {
+    throw new Error("User should be authenticated at this point");
+  }
+
   const body = await request.json();
 
   const parsed = zCreateGeneration.safeParse(body);
@@ -17,10 +22,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     const service = new GenerationService(locals.supabase);
-    const dto = await service.generateRecipe(parsed.data);
+    const dto = await service.generateRecipe(locals.user.id, parsed.data);
     return new Response(JSON.stringify(dto), { status: 202 });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("POST /generations failed", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
   }

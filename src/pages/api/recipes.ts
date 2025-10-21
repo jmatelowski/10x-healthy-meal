@@ -6,12 +6,9 @@ import { RecipesService } from "@/lib/services/recipes.service";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  // Check authentication
+  // User is guaranteed to exist due to middleware auth check
   if (!locals.user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    throw new Error("User should be authenticated at this point");
   }
 
   const recipesService = new RecipesService(locals.supabase);
@@ -27,7 +24,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // ----- Service call -----
   try {
-    const recipe = await recipesService.createManualRecipe(parsed.data.title, parsed.data.content);
+    const recipe = await recipesService.createManualRecipe(locals.user.id, parsed.data.title, parsed.data.content);
 
     const body: RecipeCreationResponseDto = {
       id: recipe.id,
@@ -52,12 +49,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 };
 
 export const GET: APIRoute = async ({ url, locals }) => {
-  // Check authentication
+  // User is guaranteed to exist due to middleware auth check
   if (!locals.user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    throw new Error("User should be authenticated at this point");
   }
 
   const recipesService = new RecipesService(locals.supabase);
@@ -80,11 +74,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   const { page, page_size, sort } = parsed.data;
-
-  // Parse sort parameter
   const [sortField, sortDir] = sort.split(" ") as [RecipeSortField, SortDirection];
-
-  // Get authenticated user ID
   const userId = locals.user.id;
 
   // ----- Service call -----
