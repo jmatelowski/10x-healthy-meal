@@ -8,7 +8,13 @@ const apiMiddleware = async (context: APIContext, next: MiddlewareNext) => {
   const user = context.locals.user;
 
   // Public API routes that don't require authentication
-  const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout"];
+  const publicApiRoutes = [
+    "/api/auth/login",
+    "/api/auth/register",
+    "/api/auth/logout",
+    "/api/auth/password/request",
+    "/api/auth/password/update",
+  ];
 
   // Skip authentication check for public API routes
   if (publicApiRoutes.includes(pathname)) {
