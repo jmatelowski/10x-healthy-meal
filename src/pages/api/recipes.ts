@@ -2,11 +2,15 @@ import type { APIRoute } from "astro";
 import type { RecipeCreationResponseDto, RecipeListResponseDto, RecipeSortField, SortDirection } from "@/types";
 import { zCreateRecipeSchema, zRecipesQueryParams } from "@/lib/validation/recipe.schema";
 import { RecipesService } from "@/lib/services/recipes.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // User is guaranteed to exist due to middleware auth check
+  if (!locals.user) {
+    throw new Error("User should be authenticated at this point");
+  }
+
   const recipesService = new RecipesService(locals.supabase);
 
   // ----- Validation -----
@@ -20,7 +24,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // ----- Service call -----
   try {
-    const recipe = await recipesService.createManualRecipe(parsed.data.title, parsed.data.content);
+    const recipe = await recipesService.createManualRecipe(locals.user.id, parsed.data.title, parsed.data.content);
 
     const body: RecipeCreationResponseDto = {
       id: recipe.id,
@@ -45,6 +49,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 };
 
 export const GET: APIRoute = async ({ url, locals }) => {
+  // User is guaranteed to exist due to middleware auth check
+  if (!locals.user) {
+    throw new Error("User should be authenticated at this point");
+  }
+
   const recipesService = new RecipesService(locals.supabase);
 
   // ----- Parse and validate query parameters -----
@@ -65,13 +74,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   const { page, page_size, sort } = parsed.data;
-
-  // Parse sort parameter
   const [sortField, sortDir] = sort.split(" ") as [RecipeSortField, SortDirection];
-
-  // ----- Get user ID (placeholder for now) -----
-  // TODO: Replace with actual user authentication when auth is implemented
-  const userId = DEFAULT_USER_ID;
+  const userId = locals.user.id;
 
   // ----- Service call -----
   try {

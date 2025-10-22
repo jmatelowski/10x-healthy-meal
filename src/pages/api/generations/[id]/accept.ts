@@ -6,12 +6,9 @@ import { GenerationService } from "@/lib/services/generation.service";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ params, locals, request }) => {
-  // ----- Authentication check -----
-  if (!locals.supabase) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+  // User is guaranteed to exist due to middleware auth check
+  if (!locals.user) {
+    throw new Error("User should be authenticated at this point");
   }
 
   // ----- Path parameter validation -----
@@ -61,7 +58,7 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
   // ----- Service call -----
   try {
     const service = new GenerationService(locals.supabase);
-    const result = await service.acceptGeneration(generationId, recipeData);
+    const result = await service.acceptGeneration(locals.user.id, generationId, recipeData);
 
     const response: AcceptGenerationResponseDto = {
       recipe_id: result.recipe_id,

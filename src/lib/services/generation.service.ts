@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 
-import { DEFAULT_USER_ID, type SupabaseClient } from "@/db/supabase.client";
+import type { SupabaseClient } from "@/db/supabase.client";
 import { generateRecipeProposal } from "./ai.adapter";
 import type { CreateGenerationCommand, GenerationCreationResponseDto } from "@/types";
 import type { Database } from "@/db/database.types";
@@ -8,7 +8,7 @@ import type { Database } from "@/db/database.types";
 export class GenerationService {
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async generateRecipe(cmd: CreateGenerationCommand): Promise<GenerationCreationResponseDto> {
+  async generateRecipe(userId: string, cmd: CreateGenerationCommand): Promise<GenerationCreationResponseDto> {
     const startedAt = Date.now();
 
     const title = cmd.title.trim();
@@ -23,7 +23,7 @@ export class GenerationService {
     const { data, error } = await this.supabase
       .from("generations")
       .insert({
-        user_id: DEFAULT_USER_ID,
+        user_id: userId,
         model: proposal.model,
         source_title_hash,
         source_title_length: title.length,
@@ -37,7 +37,7 @@ export class GenerationService {
 
     if (error || !data) {
       await GenerationService.logError(this.supabase, {
-        user_id: DEFAULT_USER_ID,
+        user_id: userId,
         model: proposal.model,
         source_title_hash,
         source_title_length: title.length,
@@ -66,12 +66,13 @@ export class GenerationService {
    * @throws Error with specific codes for 404/409/500 scenarios
    */
   async acceptGeneration(
+    userId: string,
     generationId: string,
     recipeData: { title: string; content: string }
   ): Promise<{ recipe_id: string }> {
     try {
       const { data, error } = await this.supabase.rpc("accept_generation", {
-        p_user_id: DEFAULT_USER_ID,
+        p_user_id: userId,
         p_generation_id: generationId,
         p_title: recipeData.title,
         p_content: recipeData.content,
@@ -115,10 +116,10 @@ export class GenerationService {
    * @param generationId UUID of the generation to reject
    * @throws Error with specific codes for 404/409/500 scenarios
    */
-  async rejectGeneration(generationId: string): Promise<void> {
+  async rejectGeneration(userId: string, generationId: string): Promise<void> {
     try {
       const { error } = await this.supabase.rpc("reject_generation", {
-        p_user_id: DEFAULT_USER_ID,
+        p_user_id: userId,
         p_generation_id: generationId,
       });
 
