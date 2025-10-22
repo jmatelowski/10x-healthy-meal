@@ -38,6 +38,7 @@ HealthyMeal addresses the common challenge of adjusting publicly available recip
 - **Vitest** – fast unit test framework for JavaScript/TypeScript.
 - **React Testing Library** – testing utilities for React components.
 - **Playwright** – end-to-end testing framework for web applications.
+- **Mock Service Worker (MSW)** – Mocking HTTP requests in unit/integration tests
 
 > See `.ai/tech-stack.md` for a detailed rationale.
 
@@ -108,6 +109,7 @@ The project uses a comprehensive testing strategy with multiple layers:
 - **Vitest** – Fast and modern test runner for JavaScript/TypeScript
 - **React Testing Library** – Testing utilities focused on user interactions
 - Tests cover utility functions, validation schemas, and React components
+- **Mock Service Worker (MSW)** – Mocking HTTP requests in unit/integration tests
 
 ### End-to-End Tests
 
@@ -153,4 +155,4 @@ The MVP purposefully leaves out advanced features such as multimedia, URL import
 
 ## License
 
-This project is licensed under the **MIT License**. See the [`LICENSE`](LICENSE) file for details.
+This project is licensed under the **MIT License**.

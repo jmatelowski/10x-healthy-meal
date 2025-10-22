@@ -25,6 +25,7 @@ Testowanie:
 - Playwright do automatyzacji testów end-to-end w różnych przeglądarkach
 - Axe do automatycznego testowania dostępności (WCAG)
 - GitHub Actions do uruchamiania testów w pipeline'ach CI/CD
+- Mock Service Worker (MSW) do mockowania zapytań HTTP do backendu w testach jednostkowych i integracyjnych
 
 CI/CD i Hosting:
 

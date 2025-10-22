@@ -116,15 +116,16 @@ Three main environments will be configured:
 
 ### **6. Testing Tools**
 
-| Category                 | Tool                                          | Application                                                     |
-| :----------------------- | :-------------------------------------------- | :-------------------------------------------------------------- |
-| **JS Testing Framework** | **Vitest**                                    | Running unit and integration tests.                             |
-| **UI Testing Library**   | **React Testing Library**                     | Testing React components in a way similar to user interactions. |
-| **E2E Tests**            | **Playwright**                                | Automation of complete user scenarios in browser.               |
-| **API Tests**            | **Postman** / **Insomnia** /                  | Manual and automatic testing of API endpoints.                  |
-| **Accessibility Tests**  | **Axe** (integration with Cypress/Playwright) | Automatic scanning for accessibility issues.                    |
-| **CI/CD**                | **GitHub Actions** (or other)                 | Automatic test execution after each push to repository.         |
-| **Bug Management**       | **GitHub Issues** / **Jira**                  | Recording, tracking, and managing bug lifecycle.                |
+| Category                      | Tool                                          | Application                                                     |
+| :---------------------------- | :-------------------------------------------- | :-------------------------------------------------------------- |
+| **JS Testing Framework**      | **Vitest**                                    | Running unit and integration tests.                             |
+| **UI Testing Library**        | **React Testing Library**                     | Testing React components in a way similar to user interactions. |
+| **E2E Tests**                 | **Playwright**                                | Automation of complete user scenarios in browser.               |
+| **API Tests**                 | **Postman** / **Insomnia** /                  | Manual and automatic testing of API endpoints.                  |
+| **Accessibility Tests**       | **Axe** (integration with Cypress/Playwright) | Automatic scanning for accessibility issues.                    |
+| **CI/CD**                     | **GitHub Actions** (or other)                 | Automatic test execution after each push to repository.         |
+| **Bug Management**            | **GitHub Issues** / **Jira**                  | Recording, tracking, and managing bug lifecycle.                |
+| **Mock Service Worker (MSW)** | **MSW**                                       | Mockowanie żądań HTTP w testach jednostkowych i integracyjnych  |
 
 ### **7. Test Schedule**
 

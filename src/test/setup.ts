@@ -1,5 +1,16 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import { setupServer } from "msw/node";
+import { handlers } from "./msw-handlers";
+import { beforeAll, afterEach, afterAll } from "vitest";
+
+const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+export { server };
 
 // Mock Astro globals
 Object.defineProperty(globalThis, "Astro", {
@@ -25,9 +36,6 @@ vi.stubEnv("PUBLIC_SUPABASE_URL", "http://localhost:54321");
 vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
 vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key");
 vi.stubEnv("OPENROUTER_API_KEY", "test-openrouter-key");
-
-// Mock fetch globally
-global.fetch = vi.fn();
 
 // Mock window.location
 Object.defineProperty(window, "location", {
