@@ -13,8 +13,8 @@ export function InlineErrors({ messages, id, className }: InlineErrorsProps) {
   return (
     <div id={id} className={cn("mt-1 min-h-[1.25rem]", className)} aria-live="polite" role="alert">
       {hasErrors ? (
-        errorMessages.map((message, index) => (
-          <p key={index} className="text-sm text-destructive">
+        errorMessages.map((message) => (
+          <p key={message} className="text-sm text-destructive" data-testid={id ? `field-error-${id}` : "field-error"}>
             {message}
           </p>
         ))

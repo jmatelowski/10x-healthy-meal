@@ -1,5 +1,6 @@
 import { http, HttpResponse } from "msw";
 import type { CreateRecipeCommand, CreateGenerationCommand, RecipeBase } from "../types";
+import type { RegisterParams } from "../lib/api/auth.types";
 
 export const handlers = [
   http.post("/api/recipes", async ({ request }) => {
@@ -30,5 +31,15 @@ export const handlers = [
       },
       { status: 202 }
     );
+  }),
+
+  // registerUser (sign-up)
+  http.post("/api/auth/register", async ({ request }) => {
+    const { email } = (await request.json()) as RegisterParams;
+    if (email === "exists@test.com") {
+      return HttpResponse.json({ error: "User already exists" }, { status: 400 });
+    }
+
+    return HttpResponse.json({}, { status: 200 });
   }),
 ];
