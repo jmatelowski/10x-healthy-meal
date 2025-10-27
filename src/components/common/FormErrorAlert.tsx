@@ -11,7 +11,11 @@ export function FormErrorAlert({ errors, className = "" }: FormErrorAlertProps) 
   }
 
   return (
-    <div role="alert" className={`rounded-md border border-red-200 bg-red-50 p-4 ${className}`}>
+    <div
+      role="alert"
+      data-testid="form-error-alert"
+      className={`rounded-md border border-red-200 bg-red-50 p-4 ${className}`}
+    >
       <InlineErrors messages={errors} />
     </div>
   );

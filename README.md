@@ -13,9 +13,10 @@ A web application that helps users adapt existing recipes to their individual di
 3. [Tech Stack](#tech-stack)
 4. [Getting Started Locally](#getting-started-locally)
 5. [Available Scripts](#available-scripts)
-6. [Project Scope](#project-scope)
-7. [Project Status](#project-status)
-8. [License](#license)
+6. [Testing](#testing)
+7. [Project Scope](#project-scope)
+8. [Project Status](#project-status)
+9. [License](#license)
 
 ---
 
@@ -34,6 +35,10 @@ HealthyMeal addresses the common challenge of adjusting publicly available recip
 - **shadcn/ui** – accessible React component library (via Radix UI & class-variance-authority).
 - **Supabase** – PostgreSQL database + Auth (BaaS) _(planned backend)_.
 - **OpenRouter.ai** – gateway to free LLM models for recipe adaptation.
+- **Vitest** – fast unit test framework for JavaScript/TypeScript.
+- **React Testing Library** – testing utilities for React components.
+- **Playwright** – end-to-end testing framework for web applications.
+- **Mock Service Worker (MSW)** – Mocking HTTP requests in unit/integration tests
 
 > See `.ai/tech-stack.md` for a detailed rationale.
 
@@ -89,6 +94,40 @@ From `package.json`:
 | `lint` | Lint all files with ESLint |
 | `lint:fix` | Auto-fix lint errors |
 | `format` | Format files with Prettier |
+| `test` | Run unit and integration tests with Vitest |
+| `test:e2e` | Run end-to-end tests with Playwright |
+| `test:coverage` | Generate test coverage report |
+
+---
+
+## Testing
+
+The project uses a comprehensive testing strategy with multiple layers:
+
+### Unit & Integration Tests
+
+- **Vitest** – Fast and modern test runner for JavaScript/TypeScript
+- **React Testing Library** – Testing utilities focused on user interactions
+- Tests cover utility functions, validation schemas, and React components
+- **Mock Service Worker (MSW)** – Mocking HTTP requests in unit/integration tests
+
+### End-to-End Tests
+
+- **Playwright** – Cross-browser automation for complete user flows
+- Tests simulate real user scenarios from recipe creation to AI integration
+
+### Additional Testing Tools
+
+- **Axe** – Automated accessibility testing
+- **GitHub Actions** – Continuous integration and automated test execution
+
+Run tests locally:
+
+```bash
+npm run test          # Unit/integration tests
+npm run test:e2e      # E2E tests
+npm run test:coverage # Coverage report
+```
 
 ---
 
@@ -116,4 +155,4 @@ The MVP purposefully leaves out advanced features such as multimedia, URL import
 
 ## License
 
-This project is licensed under the **MIT License**. See the [`LICENSE`](LICENSE) file for details.
+This project is licensed under the **MIT License**.
