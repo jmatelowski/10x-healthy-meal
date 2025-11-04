@@ -18,9 +18,11 @@ export class LoginPage {
   async fillCredentials(email: string, password: string): Promise<void> {
     await this.emailInput.fill(email);
     await this.emailInput.blur();
+    await this.page.waitForTimeout(1000);
 
     await this.passwordInput.fill(password);
     await this.passwordInput.blur();
+    await this.page.waitForTimeout(1000);
   }
 
   async signIn(): Promise<void> {

@@ -33,6 +33,7 @@ export default function RegisterForm() {
       const result = await registerUser({
         email: data.email,
         password: data.password,
+        confirmPassword: data.confirmPassword,
       });
 
       // Show success message or redirect based on response
