@@ -1,8 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
-
+import dotenv from "dotenv";
+import path from "path";
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
+
+dotenv.config({ path: path.resolve(process.cwd(), ".env.test"), quiet: true });
+
 export default defineConfig({
   timeout: 45 * 1000,
   testDir: "./e2e",
@@ -22,7 +26,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3000",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -31,8 +35,18 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "setup",
+      testMatch: /global\.setup\.ts/,
+      teardown: "cleanup",
+    },
+    {
+      name: "Healthy Meal Firefox",
+      use: { ...devices["Desktop Firefox"] },
+      dependencies: ["setup"],
+    },
+    {
+      name: "cleanup",
+      testMatch: /global\.teardown\.ts/,
     },
   ],
 
