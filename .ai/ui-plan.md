@@ -5,7 +5,7 @@
 - App shell: Public layout for `/login`, `/register`; Authenticated app layout for all other routes with header, main, and footer.
 - Routing: Astro pages with React components. Protected routes verify Supabase JWT via middleware; unauthorized users are redirected to `/login`.
 - Global state: `AuthProvider` (Supabase session/user) and `UserPreferencesProvider` (with dietary preferences). No external state libraries.
-- Forms & validation: Zod schemas shared with backend rules (title ≤ 50, content ≤ 10,000). Real-time validation with character counter for recipe content.
+- Forms & validation: React Hook Form 7 manages form state and leverages the Zod resolver; schemas are shared with the backend (title ≤ 50, content ≤ 10 000). Real-time validation with a character counter for recipe content.
 - Modals: Accessible, focus-trapped, Esc to close, background scroll locked. Used for AI Review and destructive confirmations (delete recipe/account).
 - Responsiveness: Tailwind 4, mobile-first. Cards grid on recipe list; 2×3 toggle grid in preferences. Optimized for <640 px.
 - Accessibility: Labeled inputs, `aria-pressed` for toggle buttons, `aria-label` and `aria-disabled` for pagination controls, keyboard navigation, and appropriate color contrast.
