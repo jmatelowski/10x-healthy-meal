@@ -1,174 +1,60 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/common/FormField";
 import { FormErrorAlert } from "@/components/common/FormErrorAlert";
 import { SubmitButton } from "@/components/common/SubmitButton";
 import { updatePassword } from "@/lib/api/auth";
 import { zPasswordUpdateCommand } from "@/lib/validation/auth.schema";
-
-interface UpdatePasswordFormState {
-  password: string;
-  confirmPassword: string;
-  errors: {
-    password?: string[];
-    confirmPassword?: string[];
-    form?: string[];
-  };
-  touched: {
-    password: boolean;
-    confirmPassword: boolean;
-  };
-  isValid: boolean;
-  isSubmitting: boolean;
-}
+import type { UpdatePasswordParams } from "@/lib/api/auth.types";
 
 export default function UpdatePasswordForm() {
-  const [formState, setFormState] = useState<UpdatePasswordFormState>({
-    password: "",
-    confirmPassword: "",
-    errors: {},
-    touched: {
-      password: false,
-      confirmPassword: false,
-    },
-    isValid: false,
-    isSubmitting: false,
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, isSubmitting },
+    setError,
+  } = useForm<UpdatePasswordParams & { confirmPassword: string }>({
+    resolver: zodResolver(zPasswordUpdateCommand),
+    mode: "onTouched",
   });
 
-  // Update form state with validation
-  const updateFormState = (updates: Partial<UpdatePasswordFormState>) => {
-    setFormState((prev) => {
-      const newState = { ...prev, ...updates };
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+  const passwordsMatch = password === confirmPassword;
 
-      // Perform validation on the new state
-      const result = zPasswordUpdateCommand.safeParse({
-        password: newState.password,
-      });
-
-      const errors: {
-        password?: string[];
-        confirmPassword?: string[];
-        form?: string[];
-      } = {
-        ...newState.errors,
-      };
-
-      // Clear field errors first
-      errors.password = undefined;
-      errors.confirmPassword = undefined;
-
-      let isValid = true;
-
-      if (!result.success) {
-        isValid = false;
-        result.error.issues.forEach((issue) => {
-          const field = issue.path[0] as "password";
-
-          // Show validation errors only if field is touched
-          if (!newState.touched[field]) {
-            return;
-          }
-
-          if (!errors[field]) errors[field] = [];
-          errors[field].push(issue.message);
-        });
-      }
-
-      // Check password confirmation
-      if (newState.touched.confirmPassword && newState.password !== newState.confirmPassword) {
-        isValid = false;
-        if (newState.confirmPassword !== "") {
-          errors.confirmPassword = ["Passwords do not match."];
-        }
-      }
-
-      return {
-        ...newState,
-        isValid,
-        errors,
-      };
-    });
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
-      password: e.target.value,
-      touched: {
-        ...formState.touched,
-        password: true,
-      },
-    });
-  };
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
-      confirmPassword: e.target.value,
-      touched: {
-        ...formState.touched,
-        confirmPassword: true,
-      },
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Mark all fields as touched
-    const touchedState = {
-      password: true,
-      confirmPassword: true,
-    };
-
-    updateFormState({
-      touched: touchedState,
-    });
-
-    // Validate the form
-    const result = zPasswordUpdateCommand.safeParse({
-      password: formState.password,
-    });
-
-    if (!result.success || formState.password !== formState.confirmPassword) {
+  const onSubmit = async (data: UpdatePasswordParams & { confirmPassword: string }) => {
+    if (!passwordsMatch) {
+      setError("confirmPassword", { message: "Passwords do not match." });
       return;
     }
 
-    updateFormState({ isSubmitting: true, errors: {} });
-
     try {
       await updatePassword({
-        password: formState.password,
+        password: data.password,
       });
 
       // Redirect to home page with success message
-      window.location.href = "/?message=password-updated";
+      window.location.replace("/?message=password-updated");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";
-
-      updateFormState({
-        isSubmitting: false,
-        errors: {
-          form: [errorMessage],
-        },
-      });
+      setError("root", { message: errorMessage });
     }
   };
 
-  const isFormValid =
-    formState.isValid && formState.password !== "" && formState.password === formState.confirmPassword;
-
   return (
     <div className="max-w-md mx-auto">
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <FormErrorAlert errors={formState.errors.form} />
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <FormErrorAlert errors={errors.root?.message ? [errors.root.message] : undefined} />
 
         <FormField
           label="New Password"
           type="password"
-          value={formState.password}
-          onChange={handlePasswordChange}
+          register={register("password")}
+          error={errors.password}
           placeholder="Enter your new password..."
-          errors={formState.errors.password}
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="new-password"
           required
         />
@@ -176,19 +62,18 @@ export default function UpdatePasswordForm() {
         <FormField
           label="Confirm New Password"
           type="password"
-          value={formState.confirmPassword}
-          onChange={handleConfirmPasswordChange}
+          register={register("confirmPassword")}
+          error={errors.confirmPassword}
           placeholder="Confirm your new password..."
-          errors={formState.errors.confirmPassword}
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="new-password"
           required
         />
 
         <div className="pt-4">
           <SubmitButton
-            isSubmitting={formState.isSubmitting}
-            disabled={!isFormValid}
+            isSubmitting={isSubmitting}
+            disabled={!isValid || !passwordsMatch}
             loadingText="Updating password..."
           >
             Update Password

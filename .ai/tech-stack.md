@@ -5,6 +5,8 @@ Frontend - Astro z React dla komponentów interaktywnych:
 - TypeScript 5 dla statycznego typowania kodu i lepszego wsparcia IDE
 - Tailwind 4 pozwala na wygodne stylowanie aplikacji
 - Shadcn/ui zapewnia bibliotekę dostępnych komponentów React, na których oprzemy UI
+- React Hook Form 7 odpowiada za zarządzanie stanem i walidacją formularzy w komponentach React, co uprościło kod i poprawiło wydajność.
+- Zod służy do deklaratywnej walidacji schematów zarówno na frontendzie, jak i w backendzie; schematy są współdzielone pomiędzy warstwami.
 
 Backend - Supabase jako kompleksowe rozwiązanie backendowe:
 

@@ -1,141 +1,41 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/common/FormField";
 import { FormErrorAlert } from "@/components/common/FormErrorAlert";
 import { SubmitButton } from "@/components/common/SubmitButton";
 import { requestPasswordReset } from "@/lib/api/auth";
 import { zResetRequestCommand } from "@/lib/validation/auth.schema";
-
-interface ResetFormState {
-  email: string;
-  errors: {
-    email?: string[];
-    form?: string[];
-  };
-  touched: {
-    email: boolean;
-  };
-  isValid: boolean;
-  isSubmitting: boolean;
-  isSuccess: boolean;
-}
+import type { RequestPasswordResetParams } from "@/lib/api/auth.types";
 
 export default function RequestPasswordResetForm() {
-  const [formState, setFormState] = useState<ResetFormState>({
-    email: "",
-    errors: {},
-    touched: {
-      email: false,
-    },
-    isValid: false,
-    isSubmitting: false,
-    isSuccess: false,
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+    setError,
+  } = useForm<RequestPasswordResetParams>({
+    resolver: zodResolver(zResetRequestCommand),
+    mode: "onTouched",
   });
 
-  // Update form state with validation
-  const updateFormState = (updates: Partial<ResetFormState>) => {
-    setFormState((prev) => {
-      const newState = { ...prev, ...updates };
-
-      // Perform validation on the new state
-      const result = zResetRequestCommand.safeParse({
-        email: newState.email,
-      });
-
-      if (result.success) {
-        return {
-          ...newState,
-          isValid: true,
-          errors: { ...newState.errors, email: undefined },
-        };
-      }
-
-      const errors: { email?: string[]; form?: string[] } = {
-        ...newState.errors,
-      };
-
-      // Clear field errors first
-      errors.email = undefined;
-
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as "email";
-
-        // Show validation errors only if field is touched
-        if (!newState.touched[field]) {
-          return;
-        }
-
-        if (!errors[field]) errors[field] = [];
-        errors[field].push(issue.message);
-      });
-
-      return {
-        ...newState,
-        isValid: false,
-        errors,
-      };
-    });
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
-      email: e.target.value,
-      touched: {
-        ...formState.touched,
-        email: true,
-      },
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Mark all fields as touched
-    const touchedState = {
-      email: true,
-    };
-
-    updateFormState({
-      touched: touchedState,
-    });
-
-    // Validate the form
-    const result = zResetRequestCommand.safeParse({
-      email: formState.email,
-    });
-
-    if (!result.success) {
-      return;
-    }
-
-    updateFormState({ isSubmitting: true, errors: {} });
-
+  const onSubmit = async (data: RequestPasswordResetParams) => {
     try {
-      await requestPasswordReset({
-        email: formState.email,
-      });
+      await requestPasswordReset(data);
 
       // Always show success message for anti-enumeration
-      updateFormState({
-        isSubmitting: false,
-        isSuccess: true,
-      });
+      setIsSuccess(true);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";
-
-      updateFormState({
-        isSubmitting: false,
-        errors: {
-          form: [errorMessage],
-        },
-      });
+      setError("root", { message: errorMessage });
     }
   };
 
-  const isFormValid = formState.isValid && formState.email.trim() !== "";
-
   // Show success state
-  if (formState.isSuccess) {
+  if (isSuccess) {
     return (
       <div className="max-w-md mx-auto text-center">
         <div className="rounded-md border border-green-200 bg-green-50 p-6">
@@ -157,27 +57,22 @@ export default function RequestPasswordResetForm() {
 
   return (
     <div className="max-w-md mx-auto">
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <FormErrorAlert errors={formState.errors.form} />
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <FormErrorAlert errors={errors.root?.message ? [errors.root.message] : undefined} />
 
         <FormField
           label="Email"
           type="email"
-          value={formState.email}
-          onChange={handleEmailChange}
+          register={register("email")}
+          error={errors.email}
           placeholder="Enter your email..."
-          errors={formState.errors.email}
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="email"
           required
         />
 
         <div className="pt-4">
-          <SubmitButton
-            isSubmitting={formState.isSubmitting}
-            disabled={!isFormValid}
-            loadingText="Sending instructions..."
-          >
+          <SubmitButton isSubmitting={isSubmitting} disabled={!isValid} loadingText="Sending instructions...">
             Send Reset Instructions
           </SubmitButton>
         </div>

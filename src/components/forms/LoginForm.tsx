@@ -1,50 +1,25 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/common/FormField";
 import { FormErrorAlert } from "@/components/common/FormErrorAlert";
 import { SubmitButton } from "@/components/common/SubmitButton";
 import { loginUser } from "@/lib/api/auth";
-
-interface LoginFormState {
-  email: string;
-  password: string;
-  errors: {
-    form?: string[];
-  };
-  isSubmitting: boolean;
-}
+import { zLoginCommand } from "@/lib/validation/auth.schema";
+import type { LoginParams } from "@/lib/api/auth.types";
 
 export default function LoginForm() {
-  const [formState, setFormState] = useState<LoginFormState>({
-    email: "",
-    password: "",
-    errors: {},
-    isSubmitting: false,
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginParams>({
+    resolver: zodResolver(zLoginCommand),
   });
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormState((prev) => ({
-      ...prev,
-      email: e.target.value,
-    }));
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormState((prev) => ({
-      ...prev,
-      password: e.target.value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setFormState((prev) => ({ ...prev, isSubmitting: true, errors: {} }));
-
+  const onSubmit = async (data: LoginParams) => {
     try {
-      await loginUser({
-        email: formState.email,
-        password: formState.password,
-      });
+      await loginUser(data);
 
       // Redirect to target page (from query param) or home page on success
       const urlParams = new URLSearchParams(window.location.search);
@@ -55,36 +30,26 @@ export default function LoginForm() {
       //   redirectTo = "/";
       // }
 
-      window.location.href = redirectTo;
+      window.location.replace(redirectTo);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";
-
-      setFormState((prev) => ({
-        ...prev,
-        isSubmitting: false,
-        errors: {
-          form: [errorMessage],
-        },
-      }));
+      setError("root", { message: errorMessage });
     }
   };
 
-  // Check if form has content for enabling submit button
-  const isFormValid = formState.email.trim().length > 0 && formState.password.length > 0;
-
   return (
     <div className="max-w-md mx-auto">
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <FormErrorAlert errors={formState.errors.form} />
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <FormErrorAlert errors={errors.root?.message ? [errors.root.message] : undefined} />
 
         <FormField
           label="Email"
           type="email"
-          value={formState.email}
-          onChange={handleEmailChange}
+          register={register("email")}
+          error={errors.email}
           placeholder="Enter your email..."
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="email"
           required
         />
@@ -92,16 +57,16 @@ export default function LoginForm() {
         <FormField
           label="Password"
           type="password"
-          value={formState.password}
-          onChange={handlePasswordChange}
+          register={register("password")}
+          error={errors.password}
           placeholder="Enter your password..."
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="current-password"
           required
         />
 
         <div className="pt-4">
-          <SubmitButton isSubmitting={formState.isSubmitting} disabled={!isFormValid} loadingText="Signing in...">
+          <SubmitButton isSubmitting={isSubmitting} disabled={false} loadingText="Signing in...">
             Sign In
           </SubmitButton>
         </div>
