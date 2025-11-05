@@ -1,208 +1,66 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/common/FormField";
 import { FormErrorAlert } from "@/components/common/FormErrorAlert";
 import { SubmitButton } from "@/components/common/SubmitButton";
 import { registerUser } from "@/lib/api/auth";
 import { zRegisterCommand } from "@/lib/validation/auth.schema";
-
-interface RegisterFormState {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  errors: {
-    email?: string[];
-    password?: string[];
-    confirmPassword?: string[];
-    form?: string[];
-  };
-  touched: {
-    email: boolean;
-    password: boolean;
-    confirmPassword: boolean;
-  };
-  isValid: boolean;
-  isSubmitting: boolean;
-}
+import type { RegisterParams } from "@/lib/api/auth.types";
 
 export default function RegisterForm() {
-  const [formState, setFormState] = useState<RegisterFormState>({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    errors: {},
-    touched: {
-      email: false,
-      password: false,
-      confirmPassword: false,
-    },
-    isValid: false,
-    isSubmitting: false,
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, isSubmitting },
+    setError,
+  } = useForm<RegisterParams & { confirmPassword: string }>({
+    resolver: zodResolver(zRegisterCommand),
+    mode: "onTouched",
   });
 
-  // Update form state with validation
-  const updateFormState = (updates: Partial<RegisterFormState>) => {
-    setFormState((prev) => {
-      const newState = { ...prev, ...updates };
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+  const passwordsMatch = password === confirmPassword;
 
-      // Perform validation on the new state
-      const result = zRegisterCommand.safeParse({
-        email: newState.email,
-        password: newState.password,
-      });
-
-      const errors: {
-        email?: string[];
-        password?: string[];
-        confirmPassword?: string[];
-        form?: string[];
-      } = {
-        ...newState.errors,
-      };
-
-      // Clear field errors first
-      errors.email = undefined;
-      errors.password = undefined;
-      errors.confirmPassword = undefined;
-
-      let isValid = true;
-
-      if (!result.success) {
-        isValid = false;
-        result.error.issues.forEach((issue) => {
-          const field = issue.path[0] as "email" | "password";
-
-          // Show validation errors only if field is touched
-          if (!newState.touched[field]) {
-            return;
-          }
-
-          if (!errors[field]) errors[field] = [];
-          errors[field].push(issue.message);
-        });
-      }
-
-      // Check password confirmation
-      if (newState.touched.confirmPassword && newState.password !== newState.confirmPassword) {
-        isValid = false;
-        if (newState.confirmPassword !== "") {
-          errors.confirmPassword = ["Passwords do not match."];
-        }
-      }
-
-      return {
-        ...newState,
-        isValid,
-        errors,
-      };
-    });
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
-      email: e.target.value,
-      touched: {
-        ...formState.touched,
-        email: true,
-      },
-    });
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
-      password: e.target.value,
-      touched: {
-        ...formState.touched,
-        password: true,
-      },
-    });
-  };
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormState({
-      confirmPassword: e.target.value,
-      touched: {
-        ...formState.touched,
-        confirmPassword: true,
-      },
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Mark all fields as touched
-    const touchedState = {
-      email: true,
-      password: true,
-      confirmPassword: true,
-    };
-
-    updateFormState({
-      touched: touchedState,
-    });
-
-    // Validate the form
-    const result = zRegisterCommand.safeParse({
-      email: formState.email,
-      password: formState.password,
-    });
-
-    if (!result.success || formState.password !== formState.confirmPassword) {
+  const onSubmit = async (data: RegisterParams & { confirmPassword: string }) => {
+    if (!passwordsMatch) {
+      setError("confirmPassword", { message: "Passwords do not match." });
       return;
     }
 
-    updateFormState({ isSubmitting: true, errors: {} });
-
     try {
       const result = await registerUser({
-        email: formState.email,
-        password: formState.password,
+        email: data.email,
+        password: data.password,
       });
 
       // Show success message or redirect based on response
       if (result.message) {
-        updateFormState({
-          isSubmitting: false,
-          errors: {
-            form: [result.message],
-          },
-        });
+        setError("root", { message: result.message });
       } else {
         // Auto-login successful, redirect to home
-        window.location.href = "/";
+        window.location.replace("/");
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";
-
-      updateFormState({
-        isSubmitting: false,
-        errors: {
-          form: [errorMessage],
-        },
-      });
+      setError("root", { message: errorMessage });
     }
   };
 
-  const isFormValid =
-    formState.isValid &&
-    formState.email.trim() !== "" &&
-    formState.password !== "" &&
-    formState.password === formState.confirmPassword;
-
   return (
     <div className="max-w-md mx-auto">
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <FormErrorAlert errors={formState.errors.form} />
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <FormErrorAlert errors={errors.root?.message ? [errors.root.message] : undefined} />
 
         <FormField
           label="Email"
           type="email"
-          value={formState.email}
-          onChange={handleEmailChange}
+          register={register("email")}
+          error={errors.email}
           placeholder="Enter your email..."
-          errors={formState.errors.email}
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="email"
           required
         />
@@ -210,11 +68,10 @@ export default function RegisterForm() {
         <FormField
           label="Password"
           type="password"
-          value={formState.password}
-          onChange={handlePasswordChange}
+          register={register("password")}
+          error={errors.password}
           placeholder="Enter your password..."
-          errors={formState.errors.password}
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="new-password"
           required
         />
@@ -222,17 +79,20 @@ export default function RegisterForm() {
         <FormField
           label="Confirm Password"
           type="password"
-          value={formState.confirmPassword}
-          onChange={handleConfirmPasswordChange}
+          register={register("confirmPassword")}
+          error={errors.confirmPassword}
           placeholder="Confirm your password..."
-          errors={formState.errors.confirmPassword}
-          disabled={formState.isSubmitting}
+          disabled={isSubmitting}
           autoComplete="new-password"
           required
         />
 
         <div className="pt-4">
-          <SubmitButton isSubmitting={formState.isSubmitting} disabled={!isFormValid} loadingText="Creating account...">
+          <SubmitButton
+            isSubmitting={isSubmitting}
+            disabled={!isValid || !passwordsMatch}
+            loadingText="Creating account..."
+          >
             Create Account
           </SubmitButton>
         </div>

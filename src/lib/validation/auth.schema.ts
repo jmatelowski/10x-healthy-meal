@@ -18,10 +18,16 @@ export const zLoginCommand = z.object({
 });
 
 // Register command schema
-export const zRegisterCommand = z.object({
-  email: zEmail,
-  password: zPassword,
-});
+export const zRegisterCommand = z
+  .object({
+    email: zEmail,
+    password: zPassword,
+    confirmPassword: zPassword,
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match.",
+  });
 
 // Password reset request schema
 export const zResetRequestCommand = z.object({
@@ -29,9 +35,15 @@ export const zResetRequestCommand = z.object({
 });
 
 // Password update schema
-export const zPasswordUpdateCommand = z.object({
-  password: zPassword,
-});
+export const zPasswordUpdateCommand = z
+  .object({
+    password: zPassword,
+    confirmPassword: zPassword,
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match.",
+  });
 
 // Inferred types for DTOs
 export type LoginCommand = z.infer<typeof zLoginCommand>;
