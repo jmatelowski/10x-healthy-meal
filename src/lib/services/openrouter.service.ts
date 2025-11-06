@@ -529,7 +529,6 @@ export class OpenRouterService {
     // TODO: Send to generation_error_logs table in Supabase
     // For now, log to console
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.error("[OpenRouter Error]", logData);
     }
   }
