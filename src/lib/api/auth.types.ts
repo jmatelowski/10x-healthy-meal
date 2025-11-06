@@ -6,10 +6,12 @@ export interface LoginParams {
 export interface RegisterParams {
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 export interface UpdatePasswordParams {
   password: string;
+  confirmPassword: string;
 }
 
 export interface RequestPasswordResetParams {

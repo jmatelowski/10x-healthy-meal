@@ -32,7 +32,7 @@ export async function loginUser({ email, password }: LoginParams): Promise<AuthR
   return { success: true };
 }
 
-export async function registerUser({ email, password }: RegisterParams): Promise<AuthResponse> {
+export async function registerUser({ email, password, confirmPassword }: RegisterParams): Promise<AuthResponse> {
   const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: {
@@ -41,6 +41,7 @@ export async function registerUser({ email, password }: RegisterParams): Promise
     body: JSON.stringify({
       email: email.trim(),
       password,
+      confirmPassword,
     }),
   });
 
@@ -62,7 +63,7 @@ export async function registerUser({ email, password }: RegisterParams): Promise
   };
 }
 
-export async function updatePassword({ password }: UpdatePasswordParams): Promise<AuthResponse> {
+export async function updatePassword({ password, confirmPassword }: UpdatePasswordParams): Promise<AuthResponse> {
   const response = await fetch("/api/auth/password/update", {
     method: "POST",
     headers: {
@@ -70,6 +71,7 @@ export async function updatePassword({ password }: UpdatePasswordParams): Promis
     },
     body: JSON.stringify({
       password,
+      confirmPassword,
     }),
   });
 

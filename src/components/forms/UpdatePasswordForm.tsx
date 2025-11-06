@@ -32,6 +32,7 @@ export default function UpdatePasswordForm() {
     try {
       await updatePassword({
         password: data.password,
+        confirmPassword: data.confirmPassword,
       });
 
       // Redirect to home page with success message
