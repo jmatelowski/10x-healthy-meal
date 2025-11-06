@@ -2,6 +2,9 @@ import { expect, test as setup } from "@playwright/test";
 import path from "path";
 
 import { LoginPage } from "./pages/LoginPage";
+import { createAuthStorageFile } from "./fixtures/createAuthStorageFile";
+
+const filePath = path.resolve(process.cwd(), "e2e", "fixtures", "auth-storage.json");
 
 setup("global setup", async ({ page }) => {
   const TEST_EMAIL = process.env.E2E_USERNAME as string;
@@ -17,8 +20,8 @@ setup("global setup", async ({ page }) => {
 
   await expect(page).toHaveURL("/");
 
-  const storageStatePath = path.resolve(process.cwd(), "e2e", "fixtures", "auth-storage.json");
-  await page.context().storageState({ path: storageStatePath });
+  await createAuthStorageFile();
+  await page.context().storageState({ path: filePath });
 
   console.info("E2E global setup complete!");
 });
