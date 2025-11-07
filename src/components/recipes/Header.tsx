@@ -9,4 +9,3 @@ export const Header: React.FC = () => (
     </Button>
   </header>
 );
-

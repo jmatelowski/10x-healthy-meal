@@ -43,7 +43,6 @@ export function AiReviewModal({ open, generationId, proposal, onClose, onAccepte
         setError(errorData.error || "Failed to accept proposal. Please try again.");
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error(error);
       setError("Network error. Please check your connection and try again.");
     } finally {
