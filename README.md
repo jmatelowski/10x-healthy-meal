@@ -156,3 +156,55 @@ The MVP purposefully leaves out advanced features such as multimedia, URL import
 ## License
 
 This project is licensed under the **MIT License**.
+
+## Running with Docker
+
+> Recommended when you want to test the production build without installing Node locally.
+
+### Build image
+
+```bash
+# Build local multi-stage image
+# Prerequisites: Docker Engine 24+ (BuildKit enabled by default)
+
+docker build -t 10x-healthy-meal:latest .
+```
+
+### Run container
+
+```bash
+# Map host port 8080 → container port 3000 (default)
+# Pass required Supabase credentials via environment variables.
+
+docker run --rm \
+  -p 8080:3000 \
+  -e SUPABASE_URL="https://your-project.supabase.co" \
+  -e SUPABASE_KEY="your_anon_key" \
+  10x-healthy-meal:latest
+```
+
+Open <http://localhost:8080> in your browser.
+
+If you prefer the app to listen on a different internal port (e.g. 8080):
+
+```bash
+docker run --rm \
+  -p 8080:8080 \
+  -e PORT=8080 \
+  -e HOST=0.0.0.0 \
+  -e SUPABASE_URL="…" \
+  -e SUPABASE_KEY="…" \
+  --name 10x-healthy-meal \
+  10x-healthy-meal:latest
+```
+
+### Using an `.env` file
+
+You have to keep secrets outside your shell history:
+
+```bash
+docker run --rm \
+  --env-file .env.production \
+  -p 8080:3000 \
+  10x-healthy-meal:latest
+```
