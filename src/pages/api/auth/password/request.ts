@@ -98,24 +98,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const { email } = validationResult.data;
 
-    // Build redirect URL using PUBLIC_SITE_URL
-    const siteUrl = import.meta.env.PUBLIC_SITE_URL;
-    if (!siteUrl) {
-      console.error("PUBLIC_SITE_URL environment variable is not set");
-      return new Response(
-        JSON.stringify({
-          error: "Server configuration error. Please try again later.",
-        }),
-        {
-          status: 500,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    const redirectTo = `${siteUrl}/auth/update-password`;
+    const redirectTo = `/auth/update-password`;
 
     // Send password reset email via Supabase
     const { error } = await locals.supabase.auth.resetPasswordForEmail(email, {
