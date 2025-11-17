@@ -276,7 +276,6 @@ All requests `Content-Type: application/json`, responses `application/json`.
 
 - `SUPABASE_URL`, `SUPABASE_KEY` (already used).
 - `SUPABASE_SERVICE_ROLE_KEY` (server only, for account deletion; never expose to the client!).
-- `PUBLIC_SITE_URL` or equivalent for building redirects (e.g., password reset).
 
 #### 5.4. Dependencies (spec)
 
