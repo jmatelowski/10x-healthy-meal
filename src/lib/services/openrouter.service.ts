@@ -6,6 +6,7 @@ import type {
   OpenRouterPayload,
   OpenRouterResponse,
 } from "./openrouter.types";
+import { OPENROUTER_API_KEY } from "astro:env/server";
 
 // ========================================
 // ERROR CLASSES
@@ -80,7 +81,7 @@ export class OpenRouterService {
     private defaultModel = "qwen/qwen3-235b-a22b:free",
     private defaults: DefaultModelParams = { temperature: 0.7 }
   ) {
-    const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    const apiKey = OPENROUTER_API_KEY;
     if (!apiKey || apiKey.trim() === "") {
       throw new Error("OpenRouter API key is required. Please set OPENROUTER_API_KEY environment variable.");
     }
