@@ -13,17 +13,18 @@ jobs:
           fetch-depth: 0 # Important: fetch all history for commits
 
       - name: Run AI generate changelog action
-        id: changelog
+        id: changelog-update
         uses: jmatelowski/ai-actions@master
         with:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Make changes to pull request
-        # if: steps.changelog.outputs.changelog_updated == 'true'
-        run: echo "${{ steps.changelog.outputs.changelog_content }}" > CHANGELOG.md
+        # if: steps.changelog-update.outputs.changelog_updated == 'true'
+        run: |
+          echo ${{ steps.changelog-update.outputs.changelog_content }} > CHANGELOG.md
 
       - name: Create Pull Request if changes were made
-        # if: steps.changelog.outputs.changelog_updated == 'true'
+        # if: steps.changelog-update.outputs.changelog_updated == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GH_PERSONAL_TOKEN }}
