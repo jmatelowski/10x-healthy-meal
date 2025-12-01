@@ -17,14 +17,23 @@ jobs:
         uses: jmatelowski/ai-actions@master
         with:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      - name: Make changes to pull request
+        # if: steps.changelog.outputs.changelog_updated == 'true'
+        run: steps.changelog.outputs.changelog_content > changelog.md
+
       - name: Create Pull Request if changes were made
+        # if: steps.changelog.outputs.changelog_updated == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GH_PERSONAL_TOKEN }}
-          title: "chore: Update changelog with AI assistance"
+          commit-message: "chore: Update changelog with AI assistance"
           commiter: "GitHub <noreply@github.com>"
           author: ${{ github.actor }} <${{ github.actor_id }}+${{github.actor}}@users.noreply.github.com>
           branch: chore/update-changelog-with-ai-assistance
           delete-branch: true
           body: |
             Automated changelog update with AI assistance.
+          labels: |
+            documentation
+            automated pr
