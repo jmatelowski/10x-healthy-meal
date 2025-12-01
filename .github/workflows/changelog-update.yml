@@ -20,9 +20,7 @@ jobs:
 
       - name: Make changes to pull request
         # if: steps.changelog.outputs.changelog_updated == 'true'
-        run: |
-          ${{ steps.changelog.outputs.changelog_content }} > CHANGELOG.md
-          date +%s > report.txt
+        run: printf '%s\n' "${{ steps.changelog.outputs.changelog_content }}" > CHANGELOG.md
 
       - name: Create Pull Request if changes were made
         # if: steps.changelog.outputs.changelog_updated == 'true'
