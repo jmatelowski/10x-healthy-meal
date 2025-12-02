@@ -6,25 +6,35 @@ on:
 jobs:
   changelog:
     runs-on: ubuntu-latest
+    environment: integration
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Important: fetch all history for commits
 
       - name: Run AI generate changelog action
-        id: changelog
+        id: changelog-update
         uses: jmatelowski/ai-actions@master
         with:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      - name: Make changes to pull request
+        if: ${{ steps.changelog-update.outputs.changelog-updated }} == 'true'
+        run: |
+          echo "${{ steps.changelog-update.outputs.changelog-content }}" > CHANGELOG.md
+
       - name: Create Pull Request if changes were made
-        if: steps.changelog.outputs.changelog_updated == 'true'
+        if: ${{ steps.changelog-update.outputs.changelog-updated }} == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GH_PERSONAL_TOKEN }}
-          title: "chore: Update changelog with AI assistance"
-          commiter: "GitHub <noreply@github.com>"
+          commit-message: "chore: Update changelog with AI assistance"
+          committer: "GitHub <noreply@github.com>"
           author: ${{ github.actor }} <${{ github.actor_id }}+${{github.actor}}@users.noreply.github.com>
           branch: chore/update-changelog-with-ai-assistance
           delete-branch: true
           body: |
             Automated changelog update with AI assistance.
+          labels: |
+            documentation
+            automated pr
