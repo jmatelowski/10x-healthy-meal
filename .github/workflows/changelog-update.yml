@@ -19,12 +19,12 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Make changes to pull request
-        if: ${{ steps.changelog-update.outputs.changelog_updated }} == 'true'
+        if: ${{ steps.changelog-update.outputs.changelog-updated }} == 'true'
         run: |
-          echo "${{ steps.changelog-update.outputs.changelog_content }}" > CHANGELOG.md
+          echo "${{ steps.changelog-update.outputs.changelog-content }}" > CHANGELOG.md
 
       - name: Create Pull Request if changes were made
-        if: ${{ steps.changelog-update.outputs.changelog_updated }} == 'true'
+        if: ${{ steps.changelog-update.outputs.changelog-updated }} == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GH_PERSONAL_TOKEN }}
