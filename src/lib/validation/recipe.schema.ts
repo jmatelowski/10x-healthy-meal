@@ -64,3 +64,13 @@ export const zRecipePathParams = z.object({
 });
 
 export type RecipePathParams = z.infer<typeof zRecipePathParams>;
+
+/**
+ * Zod schema for DELETE /recipes/{id} path parameters
+ * - validates UUID format for recipe ID
+ */
+export const zDeleteRecipeParamsSchema = z.object({
+  id: z.string().uuid("Invalid recipe id"),
+});
+
+export type DeleteRecipeParams = z.infer<typeof zDeleteRecipeParamsSchema>;
