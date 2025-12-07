@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@/db/supabase.client";
 import type { Tables } from "@/db/database.types";
-import type { RecipeListItemDto, RecipeSource, ListRecipesParams } from "@/types";
+import type { RecipeListItemDto, RecipeSource, ListRecipesParams, RecipeDto } from "@/types";
 
 export class RecipesService {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -70,5 +70,38 @@ export class RecipesService {
     const total = countResult.count || 0;
 
     return { items, total };
+  }
+
+  /**
+   * Retrieves a single recipe by ID for a specific user
+   * @param userId - The user ID who owns the recipe
+   * @param recipeId - The UUID of the recipe to retrieve
+   * @returns Promise with the recipe data
+   * @throws Error if recipe not found or database error occurs
+   */
+  async getRecipe(userId: string, recipeId: string): Promise<RecipeDto> {
+    const { data, error } = await this.supabase
+      .from("recipes")
+      .select("id, title, content, source, created_at, updated_at")
+      .eq("id", recipeId)
+      .eq("user_id", userId) // IDOR prevention - only user's own recipes
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to fetch recipe: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("Recipe not found");
+    }
+
+    return {
+      id: data.id,
+      title: data.title,
+      content: data.content,
+      source: data.source as RecipeSource,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
   }
 }

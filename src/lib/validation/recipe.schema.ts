@@ -54,3 +54,13 @@ export const zRecipesQueryParams = z.object({
 });
 
 export type RecipesQueryParamsDTO = z.infer<typeof zRecipesQueryParams>;
+
+/**
+ * Zod schema for GET /recipes/{id} path parameters
+ * - validates UUID format for recipe ID
+ */
+export const zRecipePathParams = z.object({
+  id: z.string().uuid("Invalid recipe ID format"),
+});
+
+export type RecipePathParams = z.infer<typeof zRecipePathParams>;
