@@ -1,0 +1,14 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import RecipeDetailIsland from "@/components/recipes/detail/RecipeDetailIsland";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/recipes");
+}
+---
+
+<Layout title="Recipe Details">
+  <RecipeDetailIsland id={id} client:load />
+</Layout>

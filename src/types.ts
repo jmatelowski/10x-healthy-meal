@@ -189,3 +189,36 @@ export interface AiReviewState {
   proposal: RecipeBase | null;
   errorMessage?: string;
 }
+
+// ------------------------------------
+// View Model Types for Recipe Detail
+// ------------------------------------
+
+/**
+ * View model for recipe detail view
+ */
+export interface RecipeDetailViewModel {
+  id: string;
+  title: string;
+  content: string;
+  source: RecipeSource;
+  updatedAt: string; // ISO
+}
+
+/**
+ * State for recipe detail fetch
+ */
+export interface FetchState {
+  loading: boolean;
+  error?: string;
+  data?: RecipeDetailViewModel;
+}
+
+/**
+ * State for delete confirmation modal
+ */
+export interface DeleteState {
+  open: boolean;
+  deleting: boolean;
+  error?: string;
+}

@@ -1,5 +1,6 @@
 import React from "react";
 import type { RecipeListItemDto } from "@/types";
+import { SourceBadge } from "@/components/common/SourceBadge";
 
 interface RecipeCardProps {
   recipe: RecipeListItemDto;
@@ -21,12 +22,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onClick }) => {
         onClick={() => onClick(recipe.id)}
       >
         <h2 className="font-semibold text-lg leading-tight flex-1 mr-2">{recipe.title}</h2>
-        <span
-          data-testid="recipe-source-badge"
-          className={`px-2 py-0.5 rounded text-xs flex-shrink-0 ${recipe.source === "ai" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}
-        >
-          {recipe.source === "ai" ? "AI" : "Manual"}
-        </span>
+        <SourceBadge source={recipe.source} />
       </div>
       <p className="text-xs text-muted-foreground">Last update: {new Date(recipe.updated_at).toLocaleDateString()}</p>
     </article>

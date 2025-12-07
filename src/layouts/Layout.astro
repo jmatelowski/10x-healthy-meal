@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import AuthMenu from "@/components/auth/AuthMenu";
+import { ToasterProvider } from "@/components/common/ToasterProvider";
 
 interface Props {
   title?: string;
@@ -29,6 +30,7 @@ const user = Astro.locals.user;
       </div>
     </header>
     <slot />
+    <ToasterProvider client:load />
   </body>
 </html>
 
