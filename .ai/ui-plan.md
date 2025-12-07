@@ -85,9 +85,9 @@
 - View path: `/recipes/:id`
 - Main purpose: View full recipe content and manage it.
 - Key information to display:
-  - Title, content, AI badge if applicable, updated_at; actions: Edit, Delete.
+  - Title, content, AI/manual badge, updated_at; actions: Edit, Delete.
 - Key view components:
-  - RecipeHeader (title + AI Badge), Content, Metadata, Button (Edit), Button (Delete), ConfirmDeleteModal.
+  - RecipeHeader (title + Badge), Content, Metadata, Button (Edit), Button (Delete), ConfirmDeleteModal.
 - UX, accessibility, and security considerations:
   - Clear hierarchy and readable text; delete confirmation describes irreversibility.
   - 404 handled with message and link back to list.
