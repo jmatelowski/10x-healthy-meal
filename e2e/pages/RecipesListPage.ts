@@ -4,7 +4,7 @@ export class RecipesListPage {
   constructor(public page: Page) {}
 
   getRecipeCardByTitle(title: string): Locator {
-    return this.page.getByRole("article").filter({ has: this.page.getByRole("heading", { name: title }) });
+    return this.page.getByRole("button", { name: `View recipe: ${title}` });
   }
 
   async expectRecipeHasManualTag(article: Locator) {
