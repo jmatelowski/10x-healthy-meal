@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { navigate } from "astro:transitions/client";
 import { useRecipe } from "@/lib/hooks/useRecipe";
 import { useDeleteRecipe } from "@/lib/hooks/useDeleteRecipe";
 import type { DeleteState } from "@/types";
@@ -41,12 +42,11 @@ export default function RecipeDetailIsland({ id }: RecipeDetailIslandProps) {
     const success = await deleteRecipe();
 
     if (success) {
-      // Show success toast and navigate
-      toast.success("Recipe deleted successfully");
-      // Small delay to show toast before navigation
-      setTimeout(() => {
-        window.location.href = "/recipes";
-      }, 250);
+      toast.success("Recipe deleted successfully", {
+        duration: 3000,
+      });
+      // Navigate using Astro's navigate API
+      navigate("/recipes");
     } else {
       setDeleteState((prev) => ({
         ...prev,

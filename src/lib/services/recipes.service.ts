@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@/db/supabase.client";
 import type { Tables } from "@/db/database.types";
 import type { RecipeListItemDto, RecipeSource, ListRecipesParams, RecipeDto } from "@/types";
+import { NotFoundError } from "@/lib/errors";
 
 export class RecipesService {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -103,5 +104,20 @@ export class RecipesService {
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
+  }
+
+  /**
+   * Deletes a single recipe by ID for a specific user.
+   * Throws NotFoundError if the recipe does not exist or does not belong to the user.
+   */
+  async deleteRecipe({ id, userId }: { id: string; userId: string }) {
+    const { error, count } = await this.supabase
+      .from("recipes")
+      .delete({ count: "exact" })
+      .match({ id, user_id: userId });
+
+    if (error) throw error;
+    if (!count) throw new NotFoundError("Recipe not found");
+    // Return void on success
   }
 }
