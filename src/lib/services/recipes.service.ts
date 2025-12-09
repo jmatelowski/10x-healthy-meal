@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@/db/supabase.client";
 import type { Tables } from "@/db/database.types";
-import type { RecipeListItemDto, RecipeSource, ListRecipesParams, RecipeDto } from "@/types";
+import type { RecipeListItemDto, RecipeSource, ListRecipesParams, RecipeDto, UpdateRecipeCommand } from "@/types";
 import { NotFoundError } from "@/lib/errors";
 
 export class RecipesService {
@@ -94,6 +94,55 @@ export class RecipesService {
 
     if (!data) {
       throw new Error("Recipe not found");
+    }
+
+    return {
+      id: data.id,
+      title: data.title,
+      content: data.content,
+      source: data.source as RecipeSource,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+  }
+
+  /**
+   * Updates a recipe by ID for a specific user
+   * @param params - Object containing userId, recipeId, and update command
+   * @returns Promise with the updated recipe data
+   * @throws NotFoundError if recipe not found or doesn't belong to user
+   * @throws Error if database error occurs
+   */
+  async updateRecipe(params: { userId: string; recipeId: string; command: UpdateRecipeCommand }): Promise<RecipeDto> {
+    const { userId, recipeId, command } = params;
+
+    // Build update object with only provided fields
+    const updateData: Partial<{ title: string; content: string; updated_at: string }> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (command.title !== undefined) {
+      updateData.title = command.title;
+    }
+    if (command.content !== undefined) {
+      updateData.content = command.content;
+    }
+
+    // Update recipe and return updated data
+    const { data, error } = await this.supabase
+      .from("recipes")
+      .update(updateData)
+      .eq("id", recipeId)
+      .eq("user_id", userId) // IDOR prevention - only user's own recipes
+      .select("id, title, content, source, created_at, updated_at")
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update recipe: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new NotFoundError("Recipe not found");
     }
 
     return {

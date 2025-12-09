@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
 import type { RecipeDto } from "@/types";
-import { zRecipePathParams } from "@/lib/validation/recipe.schema";
+import { zRecipePathParams, zUpdateRecipeSchema } from "@/lib/validation/recipe.schema";
 import { RecipesService } from "@/lib/services/recipes.service";
 import { zDeleteRecipeParamsSchema } from "@/lib/validation/recipe.schema";
-import { NotFoundError, ValidationError } from "@/lib/errors";
+import { ValidationError, BadRequestError } from "@/lib/errors";
+import { errorToApiResponse, generateRequestId } from "@/lib/utils/error-response";
 
 export const prerender = false;
 
@@ -72,35 +73,100 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 };
 
-function errorToApiResponse(error: unknown): Response {
-  // Custom error class detection
-  if (error instanceof NotFoundError) {
-    return new Response(JSON.stringify({ error: "Recipe not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  if (error instanceof ValidationError) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  if (error instanceof Error && error.message === "Unauthorized") {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  // Generic error fallback
-  return new Response(
-    JSON.stringify({ error: "Server error", details: error instanceof Error ? error.message : "Unknown error" }),
-    {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+// Error handling is now centralized in error-response.ts utility
+
+export const PUT: APIRoute = async ({ params, request, locals }) => {
+  const requestId = generateRequestId();
+
+  try {
+    // ----- Authentication check -----
+    if (!locals.user) {
+      throw new Error("User should be authenticated at this point");
     }
-  );
-}
+
+    const userId = locals.user.id;
+
+    // ----- Path parameter validation -----
+    const pathParsed = zRecipePathParams.safeParse(params);
+    if (!pathParsed.success) {
+      return errorToApiResponse(new ValidationError("Invalid recipe ID format"));
+    }
+
+    const { id: recipeId } = pathParsed.data;
+
+    // ----- Content-Type validation -----
+    const contentType = request.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      return errorToApiResponse(new BadRequestError("Content-Type must be application/json"));
+    }
+
+    // ----- Request body size check (basic DoS protection) -----
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > 50000) {
+      // 50KB limit
+      return errorToApiResponse(new BadRequestError("Request body too large"));
+    }
+
+    // ----- Request body validation -----
+    let requestBody;
+    try {
+      requestBody = await request.json();
+    } catch {
+      return errorToApiResponse(new BadRequestError("Invalid JSON in request body"));
+    }
+
+    // Prevent mass assignment by checking for unexpected properties
+    const allowedKeys = new Set(["title", "content"]);
+    const bodyKeys = Object.keys(requestBody);
+    const unexpectedKeys = bodyKeys.filter((key) => !allowedKeys.has(key));
+
+    if (unexpectedKeys.length > 0) {
+      return errorToApiResponse(new BadRequestError(`Unexpected properties: ${unexpectedKeys.join(", ")}`));
+    }
+
+    const bodyParsed = zUpdateRecipeSchema.safeParse(requestBody);
+    if (!bodyParsed.success) {
+      return new Response(
+        JSON.stringify({
+          message: "Validation failed",
+          errors: bodyParsed.error.flatten().fieldErrors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const updateCommand = bodyParsed.data;
+
+    // ----- Service call -----
+    const recipesService = new RecipesService(locals.supabase);
+
+    const updatedRecipe: RecipeDto = await recipesService.updateRecipe({
+      userId,
+      recipeId,
+      command: updateCommand,
+    });
+
+    return new Response(JSON.stringify(updatedRecipe), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Request-ID": requestId,
+      },
+    });
+  } catch (error) {
+    // Add request ID to server errors for traceability
+    if (error instanceof Error && !error.name.includes("Error")) {
+      const serverError = new Error(error.message);
+      serverError.name = "InternalServerError";
+      (serverError as Error & { requestId?: string }).requestId = requestId;
+      return errorToApiResponse(serverError);
+    }
+    return errorToApiResponse(error);
+  }
+};
 
 export const DELETE: APIRoute = async ({ params, locals }) => {
   if (!locals.user) {
