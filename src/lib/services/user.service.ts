@@ -15,3 +15,22 @@ export class UserService {
     return Array.isArray(data) ? data.map((row) => row.diet_pref) : [];
   }
 }
+
+/**
+ * Permanently deletes the authenticated user via Supabase Admin API.
+ * This cascades all user-owned data via Postgres ON DELETE CASCADE.
+ * Throws error on failure, or {statusCode: 404} if user was already deleted.
+ */
+export async function deleteUserAccount({ admin, userId }: { admin: SupabaseClient; userId: string }): Promise<void> {
+  // Call Supabase Admin API to delete user from auth.users
+  const { error: adminDeleteError } = await admin.auth.admin.deleteUser(userId);
+  if (adminDeleteError && adminDeleteError.status === 404) {
+    // User not found: treat as already deleted (return 404 at API layer)
+    const err = Object.assign(new Error("User not found"), { statusCode: 404 });
+
+    throw err;
+  }
+  if (adminDeleteError) {
+    throw new Error("Failed to delete user (admin)");
+  }
+}
