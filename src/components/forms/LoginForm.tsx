@@ -6,6 +6,7 @@ import { SubmitButton } from "@/components/common/SubmitButton";
 import { loginUser } from "@/lib/api/auth";
 import { zLoginCommand } from "@/lib/validation/auth.schema";
 import type { LoginParams } from "@/lib/api/auth.types";
+import { navigate } from "astro:transitions/client";
 
 export default function LoginForm() {
   const {
@@ -30,7 +31,7 @@ export default function LoginForm() {
       //   redirectTo = "/";
       // }
 
-      window.location.replace(redirectTo);
+      navigate(redirectTo);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";

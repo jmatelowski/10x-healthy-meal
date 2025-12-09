@@ -6,6 +6,7 @@ import { SubmitButton } from "@/components/common/SubmitButton";
 import { updatePassword } from "@/lib/api/auth";
 import { zPasswordUpdateCommand } from "@/lib/validation/auth.schema";
 import type { UpdatePasswordParams } from "@/lib/api/auth.types";
+import { navigate } from "astro:transitions/client";
 
 export default function UpdatePasswordForm() {
   const {
@@ -36,7 +37,7 @@ export default function UpdatePasswordForm() {
       });
 
       // Redirect to home page with success message
-      window.location.replace("/?message=password-updated");
+      navigate("/?message=password-updated");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";
