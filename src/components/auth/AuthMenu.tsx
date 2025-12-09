@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { navigate } from "astro:transitions/client";
 
 interface AuthMenuProps {
   user?: {
@@ -24,7 +25,7 @@ export default function AuthMenu({ user }: AuthMenuProps) {
       });
 
       if (response.ok) {
-        window.location.href = "/";
+        navigate("/");
       } else {
         console.error("Logout failed");
         setIsLoggingOut(false);
@@ -51,7 +52,7 @@ export default function AuthMenu({ user }: AuthMenuProps) {
       });
 
       if (response.ok) {
-        window.location.href = "/auth/login?message=account-deleted";
+        navigate("/auth/login?message=account-deleted");
       } else {
         alert("Failed to delete account. Please try again.");
       }
