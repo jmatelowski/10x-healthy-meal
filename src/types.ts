@@ -222,3 +222,23 @@ export interface DeleteState {
   deleting: boolean;
   error?: string;
 }
+
+// ------------------------------------
+// View Model Types for Recipe Edit
+// ------------------------------------
+
+/**
+ * View model for recipe edit form state
+ */
+export interface RecipeEditViewModel extends RecipeBase {
+  errors: {
+    title?: string[];
+    content?: string[];
+  };
+  touched: {
+    title: boolean;
+    content: boolean;
+  };
+  isValid: boolean;
+  isSubmitting: boolean;
+}

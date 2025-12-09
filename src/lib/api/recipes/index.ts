@@ -56,3 +56,19 @@ export async function deleteRecipe(id: string): Promise<void> {
     handleApiError(response, "Failed to delete recipe");
   }
 }
+
+export async function updateRecipe(id: string, payload: { title?: string; content?: string }): Promise<RecipeDto> {
+  const response = await fetch(`/api/recipes/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    handleApiError(response, "Failed to update recipe");
+  }
+
+  return response.json();
+}

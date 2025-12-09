@@ -1,0 +1,14 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import RecipeEditPage from "@/components/recipes/edit/RecipeEditPage";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/recipes");
+}
+---
+
+<Layout title="Edit Recipe">
+  <RecipeEditPage id={id} client:load />
+</Layout>
