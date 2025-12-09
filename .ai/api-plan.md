@@ -14,12 +14,7 @@
 
 ### 2.1 Authentication
 
-Supabase Auth is used under the hood, but we expose two thin wrapper endpoints that enrich the default response with domain-specific fields (dietary preferences & optional role).
-
-| Method | Path           | Description                                                                |
-| ------ | -------------- | -------------------------------------------------------------------------- |
-| POST   | `/auth/login`  | Sign in with email/password and return session + user profile information. |
-| POST   | `/auth/signup` | Register a new account and immediately return the same payload as login.   |
+Supabase provides `/auth/v1/*` endpoints for sign-up, sign-in, session refresh and sign-out. The frontend SDK will call those directly; therefore they are **out of scope** of this plan. All custom endpoints below require a valid Supabase JWT Access Token sent in the `Authorization: Bearer <jwt>` header.
 
 Both endpoints proxy to the corresponding Supabase Auth calls and then perform an additional query on `user_diet_preferences` (and future `roles`) before forming the response.
 
@@ -46,6 +41,41 @@ Implementation notes:
 
 1. Call `supabase.auth.signInWithPassword({ email, password })`.
 2. On success, read `session.access_token`, `session.user.id`, `session.expires_in`.
+3. Fetch preferences: `SELECT diet_pref FROM user_diet_preferences WHERE user_id = :uid`.
+4. Future-proof role: read `raw_user_meta_data.role` or dedicated column if introduced later.
+5. Return combined payload.
+
+#### 2.1.2 `POST /auth/signup`
+
+Identical response shape; internally calls `supabase.auth.signUp()` followed by the same enrichment steps.
+
+For all other authenticated requests the client sends the `access_token` in `Authorization: Bearer <jwt>` header.
+
+Both supabase endpoints (signInWithPassword and signUp) calls and then perform an additional query on `user_diet_preferences` before forming the response.
+
+#### 2.1.1 `POST /auth/login`
+
+```jsonc
+// Request body
+{
+  "email": "user@example.com",
+  "password": "hunter2"
+}
+
+// Response 200
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "preferences": ["vegan"],        // Empty array if no prefs yet
+}
+```
+
+• Returns 401 on invalid credentials.
+
+Implementation notes:
+
+1. Call `supabase.auth.signInWithPassword({ email, password })`.
+2. On success, read `session.user.id`, `session.user_email`.
 3. Fetch preferences: `SELECT diet_pref FROM user_diet_preferences WHERE user_id = :uid`.
 4. Future-proof role: read `raw_user_meta_data.role` or dedicated column if introduced later.
 5. Return combined payload.
