@@ -1,0 +1,17 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import UserProfile from "@/components/profile/UserProfile";
+
+// Auth guard is handled by middleware - user will be redirected if not authenticated
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
+---
+
+<Layout title="Profile - HealthyMeal">
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <UserProfile client:load />
+  </main>
+</Layout>
