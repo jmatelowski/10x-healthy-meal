@@ -70,7 +70,29 @@ export type RecipePathParams = z.infer<typeof zRecipePathParams>;
  * - validates UUID format for recipe ID
  */
 export const zDeleteRecipeParamsSchema = z.object({
-  id: z.string().uuid("Invalid recipe id"),
+  id: z.string().uuid("Invalid recipe ID format"),
 });
 
 export type DeleteRecipeParams = z.infer<typeof zDeleteRecipeParamsSchema>;
+
+/**
+ * Zod schema for PUT /recipes/{id} payload
+ * - validates partial updates to recipe
+ * - at least one field must be provided
+ * - trims strings and enforces length limits
+ */
+export const zUpdateRecipeSchema = z
+  .object({
+    title: z.string().trim().min(1, "Title cannot be empty").max(50, "Title must be ≤ 50 characters").optional(),
+    content: z
+      .string()
+      .trim()
+      .min(1, "Content cannot be empty")
+      .max(10_000, "Content must be ≤ 10 000 characters")
+      .optional(),
+  })
+  .refine((data) => data.title !== undefined || data.content !== undefined, {
+    message: "At least one of 'title' or 'content' must be provided",
+  });
+
+export type UpdateRecipePayload = z.infer<typeof zUpdateRecipeSchema>;
