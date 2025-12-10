@@ -1,5 +1,3 @@
-import { createHash } from "crypto";
-
 import type { SupabaseClient } from "@/db/supabase.client";
 import { generateRecipeProposal } from "./ai.adapter";
 import type { CreateGenerationCommand, GenerationCreationResponseDto } from "@/types";
@@ -23,8 +21,8 @@ export class GenerationService {
     const proposal = await generateRecipeProposal(title, content, preferences.join(", "));
 
     // ----- Hashes & lengths -----
-    const source_title_hash = GenerationService.sha256Hex(title);
-    const source_text_hash = GenerationService.sha256Hex(content);
+    const source_title_hash = await GenerationService.sha256Hex(title);
+    const source_text_hash = await GenerationService.sha256Hex(content);
 
     const { data, error } = await this.supabase
       .from("generations")
@@ -156,8 +154,13 @@ export class GenerationService {
     }
   }
 
-  private static sha256Hex(value: string): string {
-    return createHash("sha256").update(value, "utf8").digest("hex");
+  private static async sha256Hex(value: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(value);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
   private static async logError(
