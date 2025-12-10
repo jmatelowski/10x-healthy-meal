@@ -4,9 +4,14 @@ import type { SupabaseClient } from "@/db/supabase.client";
 import { generateRecipeProposal } from "./ai.adapter";
 import type { CreateGenerationCommand, GenerationCreationResponseDto } from "@/types";
 import type { Database } from "@/db/database.types";
+import { UserService } from "./user.service";
 
 export class GenerationService {
-  constructor(private readonly supabase: SupabaseClient) {}
+  private readonly userService: UserService;
+
+  constructor(private readonly supabase: SupabaseClient) {
+    this.userService = new UserService(supabase);
+  }
 
   async generateRecipe(userId: string, cmd: CreateGenerationCommand): Promise<GenerationCreationResponseDto> {
     const startedAt = Date.now();
@@ -14,7 +19,8 @@ export class GenerationService {
     const title = cmd.title.trim();
     const content = cmd.content.trim();
 
-    const proposal = await generateRecipeProposal(title, content);
+    const preferences = await this.userService.getUserDietPreferences(userId);
+    const proposal = await generateRecipeProposal(title, content, preferences.join(", "));
 
     // ----- Hashes & lengths -----
     const source_title_hash = GenerationService.sha256Hex(title);

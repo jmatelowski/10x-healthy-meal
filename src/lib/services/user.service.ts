@@ -53,6 +53,27 @@ export class UserService {
   }
 
   /**
+   * Fetches only the dietary preferences for a user.
+   * Lighter alternative to getUserProfile when only preferences are needed.
+   *
+   * @param userId - The authenticated user's ID
+   * @returns Array of dietary preferences
+   */
+  async getUserDietPreferences(userId: string): Promise<DietPref[]> {
+    const { data: preferencesData, error: preferencesError } = await this.supabase
+      .from("user_diet_preferences")
+      .select("diet_pref")
+      .eq("user_id", userId);
+
+    if (preferencesError) {
+      throw new Error(`Failed to fetch user preferences: ${preferencesError.message}`);
+    }
+
+    // Map to DietPref array
+    return Array.isArray(preferencesData) ? preferencesData.map((row) => row.diet_pref as DietPref) : [];
+  }
+
+  /**
    * Replaces the complete set of dietary preferences for a user.
    * This operation is idempotent - the final state equals the provided list.
    *
