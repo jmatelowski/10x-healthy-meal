@@ -66,6 +66,57 @@ export async function getUserProfile(supabase: SupabaseClient, userId: string): 
 }
 
 /**
+ * Replaces the complete set of dietary preferences for a user.
+ * This operation is idempotent - the final state equals the provided list.
+ *
+ * Implementation uses a transaction pattern:
+ * 1. Delete all existing preferences for the user
+ * 2. Insert new preferences in bulk
+ *
+ * @param supabase - Supabase client instance
+ * @param userId - The authenticated user's ID
+ * @param preferences - Array of diet preferences (≤6)
+ * @throws Error with statusCode property for specific HTTP responses
+ */
+export async function replaceUserDietPrefs(
+  supabase: SupabaseClient,
+  userId: string,
+  preferences: DietPref[]
+): Promise<void> {
+  // First, verify the user exists in auth
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user || user.id !== userId) {
+    const err = Object.assign(new Error("User not found"), { statusCode: 404 });
+    throw err;
+  }
+
+  // Step 1: Delete all existing preferences for this user
+  const { error: deleteError } = await supabase.from("user_diet_preferences").delete().eq("user_id", userId);
+
+  if (deleteError) {
+    throw new Error(`Failed to delete existing preferences: ${deleteError.message}`);
+  }
+
+  // Step 2: Insert new preferences if any provided
+  if (preferences.length > 0) {
+    const rows = preferences.map((pref) => ({
+      user_id: userId,
+      diet_pref: pref,
+    }));
+
+    const { error: insertError } = await supabase.from("user_diet_preferences").insert(rows);
+
+    if (insertError) {
+      throw new Error(`Failed to insert new preferences: ${insertError.message}`);
+    }
+  }
+}
+
+/**
  * Permanently deletes the authenticated user via Supabase Admin API.
  * This cascades all user-owned data via Postgres ON DELETE CASCADE.
  * Throws error on failure, or {statusCode: 404} if user was already deleted.
