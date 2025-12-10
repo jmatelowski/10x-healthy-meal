@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import PreferenceTagInput from "./PreferenceTagInput";
 import { Button } from "@/components/ui/button";
 import { updatePreferences } from "@/lib/api/users";
-import { useAuth } from "@/contexts/AuthContext";
 import type { DietPref } from "@/types";
 
 // Validation schema
@@ -27,9 +26,12 @@ const DIET_PREFERENCES: { value: DietPref; label: string; icon: string }[] = [
   { value: "low_fodmap", label: "Low FODMAP", icon: "🍽️" },
 ];
 
-export default function PreferencesCard() {
-  const { user, updatePreferences: updateAuthPreferences } = useAuth();
+interface PreferencesCardProps {
+  preferences: DietPref[];
+  onPreferencesUpdate: (preferences: DietPref[]) => void;
+}
 
+export default function PreferencesCard({ preferences, onPreferencesUpdate }: PreferencesCardProps) {
   const {
     control,
     handleSubmit,
@@ -39,7 +41,7 @@ export default function PreferencesCard() {
   } = useForm<PreferencesFormData>({
     resolver: zodResolver(preferencesSchema),
     defaultValues: {
-      preferences: user?.preferences || [],
+      preferences,
     },
   });
 
@@ -47,10 +49,10 @@ export default function PreferencesCard() {
 
   const onSubmit = async (data: PreferencesFormData) => {
     try {
-      await updatePreferences({ preferences: data.preferences });
+      const updatedProfile = await updatePreferences({ preferences: data.preferences });
 
-      // Update auth context with new preferences
-      updateAuthPreferences(data.preferences);
+      // Update parent component state with new preferences
+      onPreferencesUpdate(updatedProfile.preferences);
 
       toast.success("Preferences saved successfully", {
         description: "Your dietary preferences have been updated.",
@@ -67,7 +69,7 @@ export default function PreferencesCard() {
   };
 
   return (
-    <section className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+    <section className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm" aria-busy={isSubmitting}>
       <div className="mb-6">
         <h2 className="text-xl font-semibold">Dietary Preferences</h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -75,7 +77,7 @@ export default function PreferencesCard() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-label="Dietary preferences form">
         {/* Error banner */}
         {(errors.root || errors.preferences) && (
           <div
@@ -92,7 +94,7 @@ export default function PreferencesCard() {
           control={control}
           name="preferences"
           render={({ field }) => (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="group" aria-label="Select dietary preferences">
               {DIET_PREFERENCES.map((pref) => {
                 const isChecked = field.value.includes(pref.value);
                 const isDisabled = isSubmitting || (!isChecked && field.value.length >= 6);

@@ -4,10 +4,12 @@ import { toast } from "sonner";
 import { ConfirmDeleteModal } from "@/components/common/ConfirmDeleteModal";
 import { Button } from "@/components/ui/button";
 import { deleteAccount } from "@/lib/api/users";
-import { useAuth } from "@/contexts/AuthContext";
 
-export default function DangerZonePanel() {
-  const { user, clearUser } = useAuth();
+interface DangerZonePanelProps {
+  userEmail: string;
+}
+
+export default function DangerZonePanel({ userEmail }: DangerZonePanelProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | undefined>();
@@ -18,9 +20,6 @@ export default function DangerZonePanel() {
       setDeleteError(undefined);
 
       await deleteAccount();
-
-      // Clear auth context
-      clearUser();
 
       toast.success("Account deleted successfully", {
         description: "Your account and all data have been permanently deleted.",
@@ -72,7 +71,7 @@ export default function DangerZonePanel() {
         deleting={isDeleting}
         error={deleteError}
         title="Delete Account"
-        description={`Are you sure you want to delete your account (${user?.email})? This action cannot be undone. All your data will be permanently deleted, including all saved recipes, dietary preferences, generation history, and account information.`}
+        description={`Are you sure you want to delete your account (${userEmail})? This action cannot be undone. All your data will be permanently deleted, including all saved recipes, dietary preferences, generation history, and account information.`}
         confirmText="Yes, Delete My Account"
       />
     </>

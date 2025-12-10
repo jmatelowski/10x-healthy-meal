@@ -1,7 +1,10 @@
 import PreferencesCard from "./PreferencesCard";
 import DangerZonePanel from "./DangerZonePanel";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function UserProfile() {
+  const { preferences, email, loading, error, updatePreferences } = useUserProfile();
+
   return (
     <div className="space-y-8">
       <div>
@@ -9,9 +12,22 @@ export default function UserProfile() {
         <p className="text-muted-foreground mt-2">Manage your dietary preferences and account settings</p>
       </div>
 
-      <PreferencesCard />
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm" role="alert">
+          {error}
+        </div>
+      )}
 
-      <DangerZonePanel />
+      {loading ? (
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
+          <div className="text-muted-foreground">Loading your profile...</div>
+        </div>
+      ) : (
+        <>
+          <PreferencesCard preferences={preferences} onPreferencesUpdate={updatePreferences} />
+          <DangerZonePanel userEmail={email} />
+        </>
+      )}
     </div>
   );
 }

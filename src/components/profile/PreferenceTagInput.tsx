@@ -28,17 +28,19 @@ export default function PreferenceTagInput({
             : "border-gray-200 bg-white text-muted-foreground hover:border-gray-300"
         }
         ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-        focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2
+        focus-within:ring-2 focus-within:ring-offset-2
+        ${checked ? "focus-within:ring-primary" : "focus-within:ring-gray-300"}
       `}
     >
       <input
         type="checkbox"
         value={value}
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={({ target }) => onChange(target.checked)}
         disabled={disabled}
         className="sr-only"
         aria-label={label}
+        aria-checked={checked}
       />
       <span className="text-xl" aria-hidden="true">
         {icon}

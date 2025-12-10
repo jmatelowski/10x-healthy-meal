@@ -1,9 +1,29 @@
 import type { UpdatePreferencesCommand, UserProfileDto } from "@/types";
 
 /**
+ * Get current user's profile including dietary preferences
+ */
+export async function getUserProfile(): Promise<UserProfileDto> {
+  const response = await fetch("/api/users/me", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || "Failed to load profile. Please try again.";
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
+}
+
+/**
  * Update user's dietary preferences
  */
-export async function updatePreferences(command: UpdatePreferencesCommand): Promise<UserProfileDto> {
+export async function updatePreferences(command: UpdatePreferencesCommand): Promise<UpdatePreferencesCommand> {
   const response = await fetch("/api/users/me/preferences", {
     method: "PUT",
     headers: {
@@ -18,7 +38,7 @@ export async function updatePreferences(command: UpdatePreferencesCommand): Prom
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  return command;
 }
 
 /**
