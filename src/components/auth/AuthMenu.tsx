@@ -36,32 +36,6 @@ export default function AuthMenu({ user }: AuthMenuProps) {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your recipes and data."
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch("/api/account", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        navigate("/auth/login?message=account-deleted");
-      } else {
-        alert("Failed to delete account. Please try again.");
-      }
-    } catch (error) {
-      console.error("Delete account error:", error);
-      alert("Network error. Please check your connection and try again.");
-    }
-  };
-
   // If user is not logged in, show login/register links
   if (!user) {
     return (
@@ -122,19 +96,20 @@ export default function AuthMenu({ user }: AuthMenuProps) {
                 <span className="font-medium text-foreground">{user.email}</span>
               </div>
 
+              <a
+                href="/profile"
+                className="block w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-gray-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Profile
+              </a>
+
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-gray-50 transition-colors disabled:opacity-50 border-t"
               >
                 {isLoggingOut ? "Signing out..." : "Sign Out"}
-              </button>
-
-              <button
-                onClick={handleDeleteAccount}
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors border-t"
-              >
-                Delete Account
               </button>
             </div>
           </div>

@@ -29,7 +29,15 @@ export async function loginUser({ email, password }: LoginParams): Promise<AuthR
     throw new Error(errorMessage);
   }
 
-  return { success: true };
+  const data = await response.json();
+  return {
+    success: true,
+    user: {
+      id: data.id,
+      email: data.email,
+      preferences: data.dietPreferences || [],
+    },
+  };
 }
 
 export async function registerUser({ email, password, confirmPassword }: RegisterParams): Promise<AuthResponse> {

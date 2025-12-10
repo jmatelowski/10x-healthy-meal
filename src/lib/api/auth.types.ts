@@ -22,4 +22,9 @@ export interface AuthResponse {
   success: boolean;
   message?: string;
   error?: string;
+  user?: {
+    id: string;
+    email: string;
+    preferences: string[];
+  };
 }
