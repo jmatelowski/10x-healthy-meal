@@ -154,7 +154,7 @@ Each error extends `BaseOpenRouterError` with `kind`, `message`, and optional `c
    ‑ Use `{ type: "json_schema", json_schema: { name, strict: true, schema } }`.
 
 4. **Model Name**  
-   ‑ Passed in `"model"`; default `"kwaipilot/kat-coder-pro:free"`.
+   ‑ Passed in `"model"`; default `"tngtech/deepseek-r1t2-chimera:free"`.
 
 5. **Model Parameters**  
    ‑ Merge default & per-call: `temperature`, `top_p`, `max_tokens`, `frequency_penalty`, `presence_penalty`.

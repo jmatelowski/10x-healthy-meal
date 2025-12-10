@@ -74,11 +74,11 @@ export class OpenRouterService {
   private readonly MAX_MESSAGE_LENGTH = 50000; // Max characters per message
 
   /**
-   * @param defaultModel Name of the LLM model (e.g. "kwaipilot/kat-coder-pro:free")
+   * @param defaultModel Name of the LLM model (e.g. "tngtech/deepseek-r1t2-chimera:free")
    * @param defaults     Optional default model parameters
    */
   constructor(
-    private defaultModel = "kwaipilot/kat-coder-pro:free",
+    private defaultModel = "tngtech/deepseek-r1t2-chimera:free",
     private defaults: DefaultModelParams = { temperature: 0.7 }
   ) {
     const apiKey = OPENROUTER_API_KEY;
