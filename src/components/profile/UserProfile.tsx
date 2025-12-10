@@ -1,6 +1,6 @@
 import PreferencesCard from "./PreferencesCard";
 import DangerZonePanel from "./DangerZonePanel";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserProfile } from "@/lib/hooks/useUserProfile";
 
 export default function UserProfile() {
   const { preferences, email, loading, error, updatePreferences } = useUserProfile();
