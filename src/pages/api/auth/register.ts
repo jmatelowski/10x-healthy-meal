@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { zRegisterCommand } from "@/lib/validation/auth.schema";
-import { UserService } from "@/lib/services/user.service";
 
 export const prerender = false;
 
@@ -60,19 +59,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Check if user was created and session established (auto-login)
     if (data.user && data.session) {
-      const userId = data.user.id;
-      const userEmail = data.user.email;
-      // Fetch diet preferences (should be empty on new signup)
-
-      const userService = new UserService(locals.supabase);
-      const dietPreferences = await userService.getDietPreferences(userId);
-
-      // Success - return enriched login response
+      // Success - auto-login completed, session cookies are automatically set by SSR client
       return new Response(
         JSON.stringify({
-          id: userId,
-          email: userEmail,
-          dietPreferences: dietPreferences || [],
+          status: "ok",
+          user: {
+            id: data.user.id,
+            email: data.user.email,
+          },
         }),
         {
           status: 200,

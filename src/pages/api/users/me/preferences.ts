@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
-import { replaceUserDietPrefs } from "@/lib/services/user.service";
+import { UserService } from "@/lib/services/user.service";
 import { zUpdatePreferencesSchema } from "@/lib/validation/user.schema";
 import { ZodError } from "zod";
+import { NotFoundError } from "@/lib/errors";
 
 export const prerender = false;
 
@@ -30,7 +31,8 @@ export const PUT: APIRoute = async ({ request, locals }) => {
     const validatedData = zUpdatePreferencesSchema.parse(body);
 
     // Call service to replace preferences
-    await replaceUserDietPrefs(locals.supabase, locals.user.id, validatedData.preferences);
+    const userService = new UserService(locals.supabase);
+    await userService.replaceUserDietPrefs(locals.user.id, validatedData.preferences);
 
     // Return 204 No Content on success
     return new Response(null, { status: 204 });
@@ -44,7 +46,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
     }
 
     // Handle user not found errors
-    if (err && typeof err === "object" && "statusCode" in err && err.statusCode === 404) {
+    if (err instanceof NotFoundError) {
       return new Response(JSON.stringify({ error: "user_not_found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },

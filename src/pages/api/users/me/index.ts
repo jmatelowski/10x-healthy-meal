@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { deleteUserAccount, getUserProfile } from "@/lib/services/user.service";
+import { UserService } from "@/lib/services/user.service";
+import { NotFoundError } from "@/lib/errors";
 
 export const prerender = false;
 
@@ -20,7 +21,8 @@ export const GET: APIRoute = async ({ locals }) => {
   }
 
   try {
-    const profile = await getUserProfile(locals.supabase, locals.user.id);
+    const userService = new UserService(locals.supabase);
+    const profile = await userService.getUserProfile(locals.user.id);
 
     if (!profile) {
       return new Response(JSON.stringify({ error: "user_not_found" }), {
@@ -62,13 +64,14 @@ export const DELETE: APIRoute = async ({ locals }) => {
   try {
     // Import admin client helper here so secret never traverses locals
     const { getSupabaseAdminClient } = await import("@/db/supabase.service");
-    await deleteUserAccount({
+    const userService = new UserService(locals.supabase);
+    await userService.deleteUserAccount({
       admin: getSupabaseAdminClient(),
       userId: user.id,
     });
     return new Response(null, { status: 204 });
   } catch (err) {
-    if (err && typeof err === "object" && "statusCode" in err && err.statusCode === 404) {
+    if (err instanceof NotFoundError) {
       return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
     }
 
