@@ -48,18 +48,21 @@ function isRateLimited(clientIP: string): boolean {
   return false;
 }
 
-// Clean up expired entries periodically
-setInterval(() => {
+// Clean up expired entries on each request (lazy cleanup)
+function cleanupExpiredEntries(): void {
   const now = Date.now();
   for (const [ip, data] of rateLimitMap.entries()) {
     if (now > data.resetTime) {
       rateLimitMap.delete(ip);
     }
   }
-}, RATE_LIMIT_WINDOW);
+}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Clean up expired rate limit entries
+    cleanupExpiredEntries();
+
     // Rate limiting check
     const clientIP = getClientIP(request);
     if (isRateLimited(clientIP)) {
