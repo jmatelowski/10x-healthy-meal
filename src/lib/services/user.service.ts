@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@/db/supabase.client";
+import type { UserProfileDto, DietPref } from "@/types";
 
 export class UserService {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -14,6 +15,54 @@ export class UserService {
     }
     return Array.isArray(data) ? data.map((row) => row.diet_pref) : [];
   }
+}
+
+/**
+ * Fetches the user profile including email and dietary preferences.
+ * Returns null if user not found in auth.users.
+ * Throws on database errors.
+ *
+ * @param supabase - Supabase client instance
+ * @param userId - The authenticated user's ID
+ * @returns UserProfileDto or null if not found
+ */
+export async function getUserProfile(supabase: SupabaseClient, userId: string): Promise<UserProfileDto | null> {
+  // Fetch user from auth.users table
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    throw new Error(`Failed to fetch user: ${authError.message}`);
+  }
+
+  if (!user || user.id !== userId) {
+    return null;
+  }
+
+  // Fetch dietary preferences from user_diet_preferences table
+  const { data: preferencesData, error: preferencesError } = await supabase
+    .from("user_diet_preferences")
+    .select("diet_pref")
+    .eq("user_id", userId);
+
+  if (preferencesError) {
+    throw new Error(`Failed to fetch preferences: ${preferencesError.message}`);
+  }
+
+  // Map to DietPref array
+  const preferences: DietPref[] = Array.isArray(preferencesData)
+    ? preferencesData.map((row) => row.diet_pref as DietPref)
+    : [];
+
+  // Construct and return UserProfileDto
+  return {
+    id: user.id,
+    email: user.email || "",
+    preferences,
+    created_at: user.created_at,
+  };
 }
 
 /**
