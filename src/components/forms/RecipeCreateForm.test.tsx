@@ -114,7 +114,7 @@ it("submits valid recipe and redirects on success", async () => {
   await userEvent.type(instructionsInput, "Lettuce!");
   await userEvent.click(saveButton);
 
-  await waitFor(() => expect(window.location.href).toBe("/recipes"));
+  await waitFor(() => expect(window.location.href).toBe("http://localhost:3000/recipes"));
 });
 
 it("disables adjust with AI button when form is invalid", async () => {

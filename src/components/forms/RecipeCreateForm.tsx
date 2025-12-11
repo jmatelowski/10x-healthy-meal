@@ -5,6 +5,7 @@ import { InlineErrors } from "@/components/common/InlineErrors";
 import { AiReviewModal } from "@/components/modals/AiReviewModal";
 import { zRecipeDraft } from "@/lib/validation/recipe.schema";
 import type { RecipeDraftViewModel, AiReviewState } from "@/types";
+import { navigate } from "astro:transitions/client";
 
 const TITLE_MAX_LENGTH = 50;
 const CONTENT_MAX_LENGTH = 10000;
@@ -116,7 +117,7 @@ export default function RecipeCreateForm() {
 
       if (response.ok) {
         // Navigate to recipes list on success
-        window.location.href = "/recipes";
+        navigate("/recipes");
       } else {
         const errorData = await response.json().catch(() => ({ errors: [] }));
         updateFormState({
@@ -195,7 +196,7 @@ export default function RecipeCreateForm() {
       proposal: null,
       errorMessage: undefined,
     });
-    window.location.href = "/recipes";
+    navigate("/recipes");
   };
 
   const handleAiModalClose = () => {

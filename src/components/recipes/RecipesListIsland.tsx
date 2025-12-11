@@ -3,6 +3,7 @@ import { useRecipesList } from "@/lib/hooks/useRecipesList";
 import { RecipeCard } from "./RecipeCard";
 import { PaginationControls } from "./PaginationControls";
 import { Header } from "./Header";
+import { navigate } from "astro:transitions/client";
 
 const RecipesListIsland: React.FC = () => {
   const { state, gotoPage } = useRecipesList({});
@@ -48,7 +49,12 @@ const RecipesListIsland: React.FC = () => {
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {data.map((recipe) => (
           <li key={recipe.id}>
-            <RecipeCard recipe={recipe} onClick={(id) => (window.location.href = `/recipes/${id}`)} />
+            <RecipeCard
+              recipe={recipe}
+              onClick={(id) => {
+                navigate(`/recipes/${id}`);
+              }}
+            />
           </li>
         ))}
       </ul>
