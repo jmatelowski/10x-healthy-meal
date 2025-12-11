@@ -1,4 +1,6 @@
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { navigate } from "astro:transitions/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/common/FormField";
 import { FormErrorAlert } from "@/components/common/FormErrorAlert";
@@ -38,11 +40,13 @@ export default function RegisterForm() {
 
       // Show success message or redirect based on response
       if (result.message) {
-        setError("root", { message: result.message });
-      } else {
-        // Auto-login successful, redirect to home
-        window.location.replace("/");
+        toast.success(result.message, { duration: 6000 });
+        navigate("/auth/login");
+        return;
       }
+
+      // Auto-login successful, redirect to home
+      navigate("/");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Network error. Please check your connection and try again.";

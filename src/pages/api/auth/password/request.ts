@@ -100,8 +100,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const { email } = validationResult.data;
-
-    const redirectTo = `/auth/update-password`;
+    const origin = request.headers.get("origin");
+    const redirectTo = `${origin}/auth/update-password`;
 
     // Send password reset email via Supabase
     const { error } = await locals.supabase.auth.resetPasswordForEmail(email, {
